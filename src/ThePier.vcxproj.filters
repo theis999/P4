@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Natvis Include="wxWidgets.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="GUI">
+      <UniqueIdentifier>{7ee3c53c-2f6a-447a-b3d5-681cb53dbf02}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ThePierGUI.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="cApp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ThePierGUI.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Main.h" />
+    <ClInclude Include="cApp.h" />
+  </ItemGroup>
+</Project>
