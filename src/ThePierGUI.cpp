@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// C++ code generated with wxFormBuilder (version 4.2.1-16-g4b3fa447)
+// C++ code generated with wxFormBuilder (version 4.2.1-66-g57ca7150)
 // http://www.wxformbuilder.org/
 //
 // PLEASE DO *NOT* EDIT THIS FILE!
@@ -16,7 +16,7 @@ ThePier::ThePier( wxWindow* parent, wxWindowID id, const wxString& title, const 
 	wxBoxSizer* MainSizer;
 	MainSizer = new wxBoxSizer( wxHORIZONTAL );
 
-	ChannelsPanel = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	ChannelsPanel = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxSize( 100,-1 ), wxTAB_TRAVERSAL );
 	wxBoxSizer* ChannelsPanelSizer;
 	ChannelsPanelSizer = new wxBoxSizer( wxVERTICAL );
 
@@ -38,7 +38,6 @@ ThePier::ThePier( wxWindow* parent, wxWindowID id, const wxString& title, const 
 
 	ChannelsPanel->SetSizer( ChannelsPanelSizer );
 	ChannelsPanel->Layout();
-	ChannelsPanelSizer->Fit( ChannelsPanel );
 	MainSizer->Add( ChannelsPanel, 1, wxEXPAND, 5 );
 
 	ChatPanel = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
@@ -57,23 +56,32 @@ ThePier::ThePier( wxWindow* parent, wxWindowID id, const wxString& title, const 
 	wxBoxSizer* ChatSizer;
 	ChatSizer = new wxBoxSizer( wxVERTICAL );
 
-	ChatBox = new wxListBox( ChatPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 );
-	ChatSizer->Add( ChatBox, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5 );
+	ChatSizer->SetMinSize( wxSize( -1,299 ) );
+	ChatBox = new wxListBox( ChatPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_ALWAYS_SB );
+	ChatBox->SetMinSize( wxSize( 600,180 ) );
+	ChatBox->SetMaxSize( wxSize( 600,-1 ) );
+
+	ChatSizer->Add( ChatBox, 0, wxALIGN_LEFT|wxALL|wxEXPAND|wxSHAPED, 5 );
 
 
-	ChatPanelSizer->Add( ChatSizer, 1, wxEXPAND, 5 );
+	ChatPanelSizer->Add( ChatSizer, 1, wxALIGN_LEFT|wxEXPAND|wxSHAPED, 5 );
 
 	wxBoxSizer* SendMsgSizer;
 	SendMsgSizer = new wxBoxSizer( wxHORIZONTAL );
 
 	SendText = new wxTextCtrl( ChatPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_PROCESS_ENTER );
-	SendMsgSizer->Add( SendText, 0, wxALL, 5 );
+	SendText->SetMinSize( wxSize( 300,-1 ) );
+	SendText->SetMaxSize( wxSize( 700,-1 ) );
+
+	SendMsgSizer->Add( SendText, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
 	SendBtn = new wxButton( ChatPanel, wxID_ANY, _("Send"), wxDefaultPosition, wxDefaultSize, 0 );
-	SendMsgSizer->Add( SendBtn, 0, wxALL, 5 );
+	SendBtn->SetMaxSize( wxSize( 65,-1 ) );
+
+	SendMsgSizer->Add( SendBtn, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
 
-	ChatPanelSizer->Add( SendMsgSizer, 1, wxEXPAND, 5 );
+	ChatPanelSizer->Add( SendMsgSizer, 1, wxALIGN_LEFT, 5 );
 
 
 	ChatPanel->SetSizer( ChatPanelSizer );
