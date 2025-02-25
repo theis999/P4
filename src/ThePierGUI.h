@@ -44,7 +44,7 @@ class ThePier : public wxFrame
 		wxPanel* ChatPanel;
 		wxStaticText* ChatLabel;
 		wxStaticLine* m_staticline5;
-		wxListBox* ChatBox;
+		wxTextCtrl* ChatDisplay;
 		wxTextCtrl* SendText;
 		wxButton* SendBtn;
 

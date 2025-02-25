@@ -1,6 +1,7 @@
 #include "Main.h"
 #include <wx/msgdlg.h>
 #include "Storage.h"
+#include "Message.h"
 
 Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(620, 325), wxDEFAULT_FRAME_STYLE | wxSYSTEM_MENU | wxTAB_TRAVERSAL)
 {
@@ -20,18 +21,25 @@ void Main::OnSendTextChange(wxCommandEvent& event)
 	event.Skip();
 }
 void Main::OnSendTextEnter(wxCommandEvent& event) {
-	auto text = SendText->GetValue();
-	wxMessageBox(text, "Send text enter");
-	ChatBox->AppendString(text);
+	SendHandler(SendText);
 }
 void Main::OnSend(wxCommandEvent& event) {
-	auto text = SendText->GetValue();
-	wxMessageBox(text, "Send text click");
-	ChatBox->AppendString(text);
+	SendHandler(SendText);
 }
 
-void Main::OnChannelsBox(wxCommandEvent& event)
-{
+// Username handling still needed
+void Main::SendHandler(wxTextCtrl* sendtext) {
+	auto text = sendtext->GetValue();
+	sendtext->Clear();
+	wxMessageBox(text, "Send text enter");
+
+	Message* msg = new Message(std::time(nullptr), wxString::FromAscii("TestUserName"), text);
+	auto msgout = msg->FormatToPrint();
+
+	ChatDisplay->AppendText(msgout);
+}
+
+void Main::OnChannelsBox(wxCommandEvent& event) {
 	//auto sel = event.GetSelection();
 	auto item = ChannelsBox->GetStringSelection();
 	ChatLabel->SetLabel(item);
