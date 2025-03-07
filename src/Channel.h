@@ -18,7 +18,7 @@ public:
 	int channel_id;
 
 	vector<Member> members;
-	vector<Message> messages;
+	vector<iMessage> messages;
 
 	Channel(string name, bool active = true);
 
