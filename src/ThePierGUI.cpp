@@ -61,7 +61,7 @@ ThePier::ThePier( wxWindow* parent, wxWindowID id, const wxString& title, const 
 	ChatDisplay->SetMinSize( wxSize( 400,180 ) );
 	ChatDisplay->SetMaxSize( wxSize( 600,180 ) );
 
-	ChatSizer->Add( ChatDisplay, 0, wxALIGN_BOTTOM|wxALL|wxEXPAND, 5 );
+	ChatSizer->Add( ChatDisplay, 0, wxALL|wxEXPAND, 5 );
 
 
 	ChatPanelSizer->Add( ChatSizer, 1, wxALIGN_LEFT|wxSHAPED, 5 );
