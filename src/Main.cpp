@@ -33,10 +33,9 @@ void Main::SendHandler(wxTextCtrl* sendtext) {
 	sendtext->Clear();
 	wxMessageBox(text, "Send text enter");
 
-	Message* msg = new Message(std::time(nullptr), wxString::FromAscii("TestUserName"), text);
-	auto msgout = msg->FormatToPrint();
+	auto msg = Message(std::time(nullptr), wxString::FromAscii("TestUserName"), text).FormatToPrint();
 
-	ChatDisplay->AppendText(msgout);
+	ChatDisplay->AppendText(msg);
 }
 
 void Main::OnChannelsBox(wxCommandEvent& event) {
