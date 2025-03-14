@@ -8,7 +8,7 @@ using std::to_string;
 
 class Main : public ThePier
 {
-	wxString window_title = "ThePier";
+	wxString window_title = "The Pier";
 
 public:
 	Main();
