@@ -1,5 +1,4 @@
 #include "Main.h"
-#include <wx/msgdlg.h>
 #include "Storage.h"
 #include "Message.h"
 
