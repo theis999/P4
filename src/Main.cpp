@@ -11,10 +11,15 @@ Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(
 	{
 		ChannelsBox->Clear();
 		for (auto &channel : storage.channels)
+		{
 			ChannelsBox->AppendString(channel.name);
+			channel.members.push_back({Member(0, channel.channel_id, "Test" + channel.name.substr(0, channel.name.size()-1))});
 	}
 }
 
+	ChannelsBox->SetSelection(storage.currentChannelIndex);
+	auto item = ChannelsBox->GetStringSelection();
+	ChatLabel->SetLabel(item);
 void Main::OnSendTextChange(wxCommandEvent& event)
 {
 	//wxMessageBox("hej");
