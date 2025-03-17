@@ -15,6 +15,8 @@ public:
 
 	void OnChannelsBox(wxCommandEvent& event);
 
+	void DisplayMsg(iMessage& m);
+
 	void OnSendTextChange(wxCommandEvent& event);
 	void OnSendTextEnter(wxCommandEvent& event);
 	void OnSend(wxCommandEvent& event);

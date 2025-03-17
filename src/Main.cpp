@@ -36,15 +36,28 @@ void Main::OnSend(wxCommandEvent& event) {
 void Main::SendHandler(wxTextCtrl* sendtext) {
 	auto text = sendtext->GetValue();
 	sendtext->Clear();
-	wxMessageBox(text, "Send text enter");
 
-	auto msg = Message(std::time(nullptr), wxString::FromAscii("TestUserName"), text).FormatToPrint();
+	auto m = iMessage(std::time(nullptr), 0, text.ToStdString());
+	storage.GetCurrentChannel().messages.push_back(m);
+	DisplayMsg(m);
 
-	ChatDisplay->AppendText(msg);
+	sendtext->SetFocus();
 }
 
 void Main::OnChannelsBox(wxCommandEvent& event) {
-	//auto sel = event.GetSelection();
 	auto item = ChannelsBox->GetStringSelection();
 	ChatLabel->SetLabel(item);
+
+	storage.currentChannelIndex = ChannelsBox->GetSelection();
+	ChatDisplay->Clear();
+	for (auto& m : storage.GetCurrentChannel().messages)
+	{
+		DisplayMsg(m);
+	}
+}
+
+void Main::DisplayMsg(iMessage& m)
+{
+	auto msg = Message(m.timestamp, storage.GetCurrentChannel().members[m.member_id].name, wxString(m.text)).FormatToPrint();
+	ChatDisplay->AppendText(msg);
 }
