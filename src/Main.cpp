@@ -14,22 +14,28 @@ Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(
 		{
 			ChannelsBox->AppendString(channel.name);
 			channel.members.push_back({Member(0, channel.channel_id, "Test" + channel.name.substr(0, channel.name.size()-1))});
+		}
 	}
-}
 
 	ChannelsBox->SetSelection(storage.currentChannelIndex);
 	auto item = ChannelsBox->GetStringSelection();
 	ChatLabel->SetLabel(item);
+	SendBtn->Enable(false);
+}
+
 void Main::OnSendTextChange(wxCommandEvent& event)
 {
-	//wxMessageBox("hej");
+	auto text = SendText->GetValue();
+	SendBtn->Enable(text.size() > 0); // simple test if there is anything to send
 	event.Skip();
 }
 void Main::OnSendTextEnter(wxCommandEvent& event) {
-	SendHandler(SendText);
+	if (SendBtn->IsEnabled())
+		SendHandler(SendText);
 }
 void Main::OnSend(wxCommandEvent& event) {
-	SendHandler(SendText);
+	if (SendBtn->IsEnabled())
+		SendHandler(SendText);
 }
 
 // Username handling still needed
