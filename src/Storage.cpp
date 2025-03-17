@@ -43,6 +43,11 @@ void Storage::OpenStorage(string filename)
 	}
 }
 
+Channel& Storage::GetCurrentChannel()
+{
+	return channels.at(currentChannelIndex);
+}
+
 string Storage::ToFileString()
 {
 	return string();

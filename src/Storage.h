@@ -19,6 +19,9 @@ public:
 	vector<Channel> channels; // channels i am part of
 	vector<User> users; // users i know, which means they are a member of a channel i am a part of
 
+	int currentChannelIndex = 0;
+	Channel& GetCurrentChannel();
+
 	string ToFileString();
 
 
