@@ -20,6 +20,7 @@
     <ClCompile Include="iMessage.cpp" />
     <ClCompile Include="User.cpp" />
     <ClCompile Include="Message.cpp" />
+    <ClCompile Include="MessageLogger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ThePierGUI.h">
@@ -34,5 +35,6 @@
     <ClInclude Include="iMessage.h" />
     <ClInclude Include="STDimport.h" />
     <ClInclude Include="User.h" />
+    <ClInclude Include="MessageLogger.h" />
   </ItemGroup>
 </Project>
