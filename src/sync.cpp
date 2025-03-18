@@ -106,7 +106,7 @@ void sync()
 
 		// DEBUG TBD
 		clientHashes = {"8UREPPUAFXROLO1W2GFO1SIFS0D676VZ"};
-		peerHashes = {"WJ8JVRYJGAFZC6LLSXMQ7TZKTZTBWT3X"};
+		peerHashes = {"0950h9v","7hf87098g709", "WJ8JVRYJGAFZC6LLSXMQ7TZKTZTBWT3X"};
 	}
 
 	int clientOrigin = std::get<1>(x);
