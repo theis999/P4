@@ -1,13 +1,9 @@
 #pragma once
 #include "ThePierGUI.h"
+#include <wx/msgdlg.h>
+#include "STDimport.h"
+#include "iMessage.h"
 
-#include <string>
-#include <vector>
-#include <map>
-
-using std::string;
-using std::vector;
-using std::pair;
 using std::to_string;
 
 class Main : public ThePier
@@ -18,6 +14,8 @@ public:
 	Main();
 
 	void OnChannelsBox(wxCommandEvent& event);
+
+	void DisplayMsg(iMessage& m);
 
 	void OnSendTextChange(wxCommandEvent& event);
 	void OnSendTextEnter(wxCommandEvent& event);
