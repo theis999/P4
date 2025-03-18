@@ -11,6 +11,7 @@ void SaveChatWindowToDatabase(wxTextCtrl* chatCtrl, const string& filename)
         ofs << chatCtrl->GetValue().ToStdString();
         ofs.close();
     }
+    // Optionally, add error logging if the file cannot be opened.
    
 }
 
