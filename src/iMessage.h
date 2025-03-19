@@ -1,5 +1,6 @@
 #pragma once
-
+#include <array>
+#include <openssl/sha.h>
 #include "STDimport.h"
 
 /// <summary>
@@ -9,13 +10,17 @@ class iMessage
 {
 public:
 	iMessage(time_t timestamp, int member_id, string text);
-	iMessage(time_t timestamp, int member_id, string text, vector<std::byte> hash);
+	iMessage(time_t timestamp, int member_id, string text, std::array<std::byte, 32> hash);
+	iMessage(time_t timestamp, int member_id, string text, std::array<std::byte, 32> hash, std::array<std::byte, 32> chainHash);
+
 
 	time_t timestamp; // When the message was sent
 	int member_id; // Who sent the message
 	string text; // What was sent
 
-	vector<std::byte> hash;
+	std::array<std::byte, 32> hash;
+	std::array<std::byte, 32> chainHash; //missing implementation
 
 	bool hasHash();
+	void computeHash();
 };
