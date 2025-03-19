@@ -32,7 +32,7 @@ void iMessage::computeHash()
 
 	// Create a string combining timestamp, member_id, and text
 	std::ostringstream data_stream;
-	data_stream << timestamp << "|" << member_id << "|" << text;
+	data_stream << timestamp << member_id << text;
 	std::string data = data_stream.str();
 
 	// Compute hash and copy to hash
