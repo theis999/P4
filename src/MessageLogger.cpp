@@ -69,7 +69,7 @@ void MessageLogger::SaveChatHistory(wxTextCtrl* chatDisplay, const wxString& cha
     }
     else
     {
-         // The user changed old lines or the file content doesn't match, so we rewrite the entire chat from scratch.
+         // File doesn't match, so we rewrite the entire chat from scratch.
         std::ofstream outFile(filePathStd, std::ios::trunc);
         if (!outFile)
         {
