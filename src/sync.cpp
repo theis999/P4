@@ -39,7 +39,7 @@ static bool resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin) //
 	return true;
 };
 
-static std::tuple<bool,int,int,std::map<string, int>> findOrigins(std::map<string, int> hashMap, vector<string> clientHashes, vector<string> peerHashes, int global_i) // returns true if Origins are found
+std::tuple<bool, int, int/*, std::map<iMessage::shash, int>*/> Channel::findOrigins(std::map<iMessage::shash, int>& hashMap, vector<iMessage::shash> clientHashes, vector<iMessage::shash> peerHashes, int global_i)
 {
 	int clientOrigin;
 	int peerOrigin;
@@ -56,7 +56,7 @@ static std::tuple<bool,int,int,std::map<string, int>> findOrigins(std::map<strin
 				clientOrigin = local_i + global_i;
 				auto& [key, value] = *a.first; // grab key and value, from the pair where insert failed
 				peerOrigin = value;
-				return std::make_tuple(true, clientOrigin, peerOrigin, hashMap);
+				return std::make_tuple(true, clientOrigin, peerOrigin/*, hashMap*/);
 			
 			}
 		}
@@ -68,16 +68,32 @@ static std::tuple<bool,int,int,std::map<string, int>> findOrigins(std::map<strin
 			{
 				peerOrigin = local_i + global_i;
 				auto& [key, value] = *b.first; // grab key and value, from the pair where insert failed
-				//auto& g = (*b.first).second; // same as above
 				clientOrigin = value;
-				return std::make_tuple(true, clientOrigin, peerOrigin, hashMap);
+				return std::make_tuple(true, clientOrigin, peerOrigin/*, hashMap*/);
 			}
 		}
 	}
 
-	return std::make_tuple(false, 0,0, hashMap); // no Origins found this time.
+	return std::make_tuple(false, 0,0/*, hashMap*/); // no Origins found this time.
 
 };
+/*
+iMessage::shash Channel::computeTestHash(std::string input)
+{
+	unsigned char hash_buffer[SHA256_DIGEST_LENGTH];
+
+	// Create a string combining timestamp, member_id, and text
+	std::ostringstream data_stream{};
+	data_stream << input;
+	std::string data = data_stream.str();
+
+	// Compute hash and copy to hash
+	SHA256(reinterpret_cast<const unsigned char*>(data.c_str()), data.size(), hash_buffer);
+	iMessage::shash o;
+	//std::memcpy((void*)&o, hash_buffer, SHA256_DIGEST_LENGTH);
+	return o;
+};
+*/
 
 
 void sync()
@@ -85,24 +101,36 @@ void sync()
 	// ## THIS FUNCTION SHALL BE MOVED TO BE PART OF CHANNEL, such that network can be used ##
 
 	// DEBUG TBD
- 	vector<string> clientHashes = {"3S597R7AA25VYS6MQHROQ6MVZCY8K3AU", "WJ8JVRYJGAFZC6LLSXMQ7TZKTZTBWT3X"};
-	vector<string> peerHashes = {"DUDMIY2KGJMHZH3O87JLUXL3TEPTA7QZ", "TJ4Q8IELKACHCDMU7Z8VLUVZ8I1OS2JF"};
+	//vector<string> clientHashes = {"3S597R7AA25VYS6MQHROQ6MVZCY8K3AU", "WJ8JVRYJGAFZC6LLSXMQ7TZKTZTBWT3X"};
 
-	std::map<string, int> hashMap = {};
+	
+	vector<iMessage::shash> peerHashes = {};
+	//peerHashes.push_back(computeTestHash("3we6d7ufigoh"));
+
+
+	std::map<iMessage::shash, int> hashMap = {};
 	int global_i = 0;
 	bool OriginsNotFound = true;
 	int n = 2; // How many hashes we get at a time
-	std::tuple<bool, int, int, std::map<string, int>> x(false,0,0,{});
+	std::tuple<bool, int, int/*, std::map<iMessage::shash, int>*/> x(false, 0, 0/*, {}*/);
 	while (1)
 	{
-		// vector<string> clientHashes = FUNCTION TO GET n clientHashes
+		// FUNCTION TO GET n clientHashes
+		vector<iMessage::shash> clientHashes = {};
+
+		for (int i = this->messages.size() - global_i; i <= 0 && i > this->messages.size() - global_i - n; --i)
+		{
+			clientHashes.push_back(this->messages[i].hash);
+		}
+
+
 		// vector<string> peerHashes = FUNCTION TO GET n peerHashes
 		x = findOrigins(hashMap, clientHashes, peerHashes, global_i);
 		if (std::get<0>(x)) break;
 
 		global_i += n;
 
-		hashMap = std::get<3>(x);
+		//hashMap = std::get<3>(x);
 
 		// DEBUG TBD
 		clientHashes = {"8UREPPUAFXROLO1W2GFO1SIFS0D676VZ"};
@@ -119,3 +147,4 @@ void sync()
 
 
 };
+

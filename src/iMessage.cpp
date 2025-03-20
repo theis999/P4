@@ -9,13 +9,13 @@ iMessage::iMessage(time_t _timestamp, int _member_id, string _text) :
 	computeHash();
 }
 
-iMessage::iMessage(time_t _timestamp, int _member_id, string _text, std::array<std::byte, 32> _hash) :
+iMessage::iMessage(time_t _timestamp, int _member_id, string _text, shash _hash) :
 	timestamp(_timestamp), member_id(_member_id), text(_text), hash(_hash)
 {
 	computeHash();
 }
 
-iMessage::iMessage(time_t _timestamp, int _member_id, string _text, std::array<std::byte, 32> _hash, std::array<std::byte, 32> _chainHash) :
+iMessage::iMessage(time_t _timestamp, int _member_id, string _text, shash _hash, shash _chainHash) :
 	timestamp(_timestamp), member_id(_member_id), text(_text), hash(_hash), chainHash(_chainHash)
 {
 	computeHash();
