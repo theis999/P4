@@ -22,5 +22,7 @@ public:
 	void OnSend(wxCommandEvent& event);
 
 	void SendHandler(wxTextCtrl* sendtext);
-};
 
+	void RunTest(wxCommandEvent& event);
+
+};
