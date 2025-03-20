@@ -39,5 +39,5 @@ public:
 	//std::tuple<bool, int, int/*, std::map<iMessage::shash, int>*/> findOrigins(std::map<iMessage::shash, int>& hashMap, vector<iMessage::shash> clientHashes, vector<iMessage::shash> peerHashes, int global_i);
 	syncOutput findOrigins(std::map<iMessage::shash, int>& hashMap, vector<iMessage::shash> clientHashes, vector<iMessage::shash> peerHashes, int global_i);
 
-	//iMessage::shash computeTestHash(std::string input);
+	iMessage::shash computeTestHash(std::string input);
 };
