@@ -16,4 +16,4 @@ public:
 };
 */
 
-void sync();
+//void sync();

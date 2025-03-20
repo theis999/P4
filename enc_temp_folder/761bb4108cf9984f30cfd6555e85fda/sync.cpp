@@ -128,7 +128,6 @@ void Channel::sync()
 		// FIX DENNE, !!! fejler med out of vector 
 
 		//wxMessageBox("> "+ std::to_string(this->messages.size()));
-		// messages SIZE is 0, figure out why
 		for (int i = this->messages.size() - global_i; i <= 0 && i > this->messages.size() - global_i - n; --i)
 		{
 			//wxMessageBox("Text: "+ this->messages[i].text + "   hashash: "+std::to_string(this->messages[i].hasHash()) + "   Hash: " /* + std::to_string(this->messages[i].hash, "!")*/); // DEBUG
