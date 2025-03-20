@@ -54,7 +54,7 @@ ThePier::ThePier( wxWindow* parent, wxWindowID id, const wxString& title, const 
 	ChatPanelSizer->Add( m_staticline5, 0, wxEXPAND | wxALL, 5 );
 
 	wxBoxSizer* ChatSizer;
-	ChatSizer = new wxBoxSizer( wxVERTICAL );
+	ChatSizer = new wxBoxSizer( wxHORIZONTAL );
 
 	ChatSizer->SetMinSize( wxSize( 299,-1 ) );
 	ChatDisplay = new wxTextCtrl( ChatPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY );
@@ -62,6 +62,9 @@ ThePier::ThePier( wxWindow* parent, wxWindowID id, const wxString& title, const 
 	ChatDisplay->SetMaxSize( wxSize( 600,180 ) );
 
 	ChatSizer->Add( ChatDisplay, 0, wxALL|wxEXPAND, 5 );
+
+	test_button = new wxButton( ChatPanel, wxID_ANY, _("Run test"), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE );
+	ChatSizer->Add( test_button, 0, wxALL, 5 );
 
 
 	ChatPanelSizer->Add( ChatSizer, 1, wxALIGN_LEFT|wxSHAPED, 5 );
@@ -97,6 +100,7 @@ ThePier::ThePier( wxWindow* parent, wxWindowID id, const wxString& title, const 
 
 	// Connect Events
 	ChannelsBox->Connect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( ThePier::OnChannelsBox ), NULL, this );
+	test_button->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ThePier::RunTest ), NULL, this );
 	SendText->Connect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( ThePier::OnSendTextChange ), NULL, this );
 	SendText->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( ThePier::OnSendTextEnter ), NULL, this );
 	SendBtn->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ThePier::OnSend ), NULL, this );
@@ -106,6 +110,7 @@ ThePier::~ThePier()
 {
 	// Disconnect Events
 	ChannelsBox->Disconnect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( ThePier::OnChannelsBox ), NULL, this );
+	test_button->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ThePier::RunTest ), NULL, this );
 	SendText->Disconnect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( ThePier::OnSendTextChange ), NULL, this );
 	SendText->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( ThePier::OnSendTextEnter ), NULL, this );
 	SendBtn->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ThePier::OnSend ), NULL, this );

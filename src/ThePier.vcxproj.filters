@@ -21,6 +21,7 @@
     <ClCompile Include="User.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="MessageLogger.cpp" />
+    <ClCompile Include="MainTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ThePierGUI.h">

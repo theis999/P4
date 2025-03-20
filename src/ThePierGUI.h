@@ -50,12 +50,14 @@ class ThePier : public wxFrame
 
 		// Virtual event handlers, override them in your derived class
 		virtual void OnChannelsBox( wxCommandEvent& event ) { event.Skip(); }
+		virtual void RunTest( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnSendTextChange( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnSendTextEnter( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnSend( wxCommandEvent& event ) { event.Skip(); }
 
 
 	public:
+		wxButton* test_button;
 
 		ThePier( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 620,325 ), long style = wxCAPTION|wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 
