@@ -39,7 +39,8 @@ static bool resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin) //
 	return true;
 };
 
-std::tuple<bool, int, int/*, std::map<iMessage::shash, int>*/> Channel::findOrigins(std::map<iMessage::shash, int>& hashMap, vector<iMessage::shash> clientHashes, vector<iMessage::shash> peerHashes, int global_i)
+//std::tuple<bool, int, int/*, std::map<iMessage::shash, int>*/>
+Channel::syncOutput Channel::findOrigins(std::map<iMessage::shash, int>&hashMap, vector<iMessage::shash> clientHashes, vector<iMessage::shash> peerHashes, int global_i)
 {
 	int clientOrigin;
 	int peerOrigin;
@@ -56,7 +57,8 @@ std::tuple<bool, int, int/*, std::map<iMessage::shash, int>*/> Channel::findOrig
 				clientOrigin = local_i + global_i;
 				auto& [key, value] = *a.first; // grab key and value, from the pair where insert failed
 				peerOrigin = value;
-				return std::make_tuple(true, clientOrigin, peerOrigin/*, hashMap*/);
+				//return std::make_tuple(true, clientOrigin, peerOrigin/*, hashMap*/);
+				return syncOutput(true, clientOrigin, peerOrigin);
 			
 			}
 		}
@@ -69,12 +71,14 @@ std::tuple<bool, int, int/*, std::map<iMessage::shash, int>*/> Channel::findOrig
 				peerOrigin = local_i + global_i;
 				auto& [key, value] = *b.first; // grab key and value, from the pair where insert failed
 				clientOrigin = value;
-				return std::make_tuple(true, clientOrigin, peerOrigin/*, hashMap*/);
+				//return std::make_tuple(true, clientOrigin, peerOrigin/*, hashMap*/);
+				return syncOutput(true, clientOrigin, peerOrigin);
 			}
 		}
 	}
 
-	return std::make_tuple(false, 0,0/*, hashMap*/); // no Origins found this time.
+	//return std::make_tuple(false, 0,0/*, hashMap*/); // no Origins found this time.
+	return syncOutput(false, 0, 0);
 
 };
 /*
@@ -112,7 +116,8 @@ void sync()
 	int global_i = 0;
 	bool OriginsNotFound = true;
 	int n = 2; // How many hashes we get at a time
-	std::tuple<bool, int, int/*, std::map<iMessage::shash, int>*/> x(false, 0, 0/*, {}*/);
+	//std::tuple<bool, int, int/*, std::map<iMessage::shash, int>*/> x(false, 0, 0/*, {}*/);
+	Channel::syncOutput x{false, 0, 0};
 	while (1)
 	{
 		// FUNCTION TO GET n clientHashes
@@ -126,7 +131,8 @@ void sync()
 
 		// vector<string> peerHashes = FUNCTION TO GET n peerHashes
 		x = findOrigins(hashMap, clientHashes, peerHashes, global_i);
-		if (std::get<0>(x)) break;
+		//if (std::get<0>(x)) break;
+		if (x.isFinished) break;
 
 		global_i += n;
 
@@ -137,9 +143,11 @@ void sync()
 		peerHashes = {"0950h9v","7hf87098g709", "WJ8JVRYJGAFZC6LLSXMQ7TZKTZTBWT3X"};
 	}
 
-	int clientOrigin = std::get<1>(x);
-	int peerOrigin = std::get<2>(x);
-	
+	//int clientOrigin = std::get<1>(x);
+	//int peerOrigin = std::get<2>(x);
+	int clientOrigin = x.clientOrigin;
+	int peerOrigin = x.peerOrigin;
+
 	//wxMessageBox("Client Origin: " + std::to_string(clientOrigin)+ "   Peer Origin: " + std::to_string(peerOrigin), "!"); // DEBUG
 
 	resolveMessageConflictsByOrigin(clientOrigin, peerOrigin);
