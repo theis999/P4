@@ -111,27 +111,29 @@ void Channel::sync()
 
 	
 	vector<iMessage::shash> peerHashes = {};
-	//peerHashes.push_back(computeTestHash("3we6d7ufigoh"));
 
 
 	std::map<iMessage::shash, int> hashMap = {};
 	int global_i = 0;
 	bool OriginsNotFound = true;
 	int n = 2; // How many hashes we get at a time
-	//std::tuple<bool, int, int/*, std::map<iMessage::shash, int>*/> x(false, 0, 0/*, {}*/); 
 	Channel::syncOutput x{false, 0, 0};
 	while (1)
 	{
 		// FUNCTION TO GET n clientHashes
 		vector<iMessage::shash> clientHashes = {};
 
-		// FIX DENNE, !!! fejler med out of vector 
 
-		//wxMessageBox("> "+ std::to_string(this->messages.size()));
-		for (int i = this->messages.size() - global_i; i <= 0 && i > this->messages.size() - global_i - n; --i)
+		/*wxMessageBox("e:" + std::to_string(messages.empty()) + "  size: " + std::to_string(messages.size()));
+		{
+			int i = this->messages.size() - global_i;
+			auto a = i >= 0 && i > this->messages.size() - global_i - n;
+			--i;
+		}*/
+		for (int i = this->messages.size() - global_i - 1; i >= 0 && i >= this->messages.size() - global_i - n; --i)
 		{
 			//wxMessageBox("Text: "+ this->messages[i].text + "   hashash: "+std::to_string(this->messages[i].hasHash()) + "   Hash: " /* + std::to_string(this->messages[i].hash, "!")*/); // DEBUG
-			wxMessageBox("i> " + std::to_string(i));
+			//wxMessageBox("i: " + std::to_string(i));
 			clientHashes.push_back(this->messages[i].hash);
 		}
 
@@ -143,15 +145,8 @@ void Channel::sync()
 
 		global_i += n;
 
-		//hashMap = std::get<3>(x);
-
-		// DEBUG TBD
-		//clientHashes = {"8UREPPUAFXROLO1W2GFO1SIFS0D676VZ"};
-		//peerHashes = {"0950h9v","7hf87098g709", "WJ8JVRYJGAFZC6LLSXMQ7TZKTZTBWT3X"};
 	}
 
-	//int clientOrigin = std::get<1>(x);
-	//int peerOrigin = std::get<2>(x);
 	int clientOrigin = x.clientOrigin;
 	int peerOrigin = x.peerOrigin;
 
