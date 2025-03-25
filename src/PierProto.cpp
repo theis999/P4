@@ -22,4 +22,3 @@ MessageRequest::MessageRequest(uint32_t _sender_GUID, uint32_t _channel_GUID, st
     PierRequest(RequestType::MESSAGE, _sender_GUID, _channel_GUID);
     message_contents = message;
 }
-
