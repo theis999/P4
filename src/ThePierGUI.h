@@ -26,6 +26,7 @@
 #include <wx/image.h>
 #include <wx/icon.h>
 #include <wx/frame.h>
+#include <wx/dialog.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -60,6 +61,33 @@ class ThePier : public wxFrame
 		ThePier( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 620,325 ), long style = wxCAPTION|wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 
 		~ThePier();
+
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/// Class LoginForm
+///////////////////////////////////////////////////////////////////////////////
+class LoginForm : public wxDialog
+{
+	private:
+
+	protected:
+		wxStaticText* UsernameLabel;
+		wxStaticText* PasswordLabel;
+
+		// Virtual event handlers, override them in your derived class
+		virtual void OnLoginInput( wxCommandEvent& event ) { event.Skip(); }
+		virtual void TryLogin( wxCommandEvent& event ) { event.Skip(); }
+
+
+	public:
+		wxTextCtrl* UsernameTextBox;
+		wxTextCtrl* PasswordTextBox;
+		wxButton* LoginButton;
+
+		LoginForm( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Login"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 319,145 ), long style = wxDEFAULT_DIALOG_STYLE );
+
+		~LoginForm();
 
 };
 

@@ -12,6 +12,7 @@ class Main : public ThePier
 
 public:
 	Main();
+	LoginForm* loginForm;
 
 	void OnChannelsBox(wxCommandEvent& event);
 

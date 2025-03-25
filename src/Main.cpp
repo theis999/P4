@@ -1,4 +1,5 @@
 #include "Main.h"
+#include "LoginController.h"
 #include "Storage.h"
 #include "Message.h"
 
@@ -21,6 +22,15 @@ Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(
 	auto item = ChannelsBox->GetStringSelection();
 	ChatLabel->SetLabel(item);
 	SendBtn->Enable(false);
+
+	CallAfter([this]()
+	{
+			this->loginForm = new LoginForm(this, wxID_ANY, "Login");
+			LoginController* loginController = new LoginController(this->loginForm);
+
+			this->loginForm->ShowModal();
+			this->loginForm->Destroy();
+	});
 }
 
 void Main::OnSendTextChange(wxCommandEvent& event)
