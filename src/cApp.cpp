@@ -11,6 +11,7 @@ bool cApp::OnInit()
 
 	m_frame1 = new Main();
 	m_frame1->Show();
+	m_frame1->DoLogin();
 
 	return true;
 };

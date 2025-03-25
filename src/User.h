@@ -1,4 +1,5 @@
 #pragma once
+#pragma comment(lib, "Rpcrt4.lib")
 
 #include "STDimport.h"
 #include <guiddef.h>
@@ -27,12 +28,15 @@ public:
 	struct channel_membership : public pair<int, Channel> { };
 	vector<channel_membership> memberships{};
 
+
+	User() = default;
 	User(GUID unique_id, int user_id, string name);
 	User(GUID unique_id, int user_id, string name, std::byte public_key[]);
 	User(GUID unique_id, int user_id, string name, std::byte public_key[], std::byte IPv4[]);
 	User(GUID unique_id, int user_id, string name, std::byte public_key[], std::byte IPv4[], vector<Channel> channels);
 
-	string ToFileString();
+	string ToFileString() const;
+	void SaveToFile(const std::string& filepath) const;
 
 	static inline User CreateUser(string _name)
 	{
@@ -40,4 +44,9 @@ public:
 		auto a = UuidCreate(&g);
 		return User(g, 0, _name);
 	}
+
+	static std::optional<User> LoadUserByName(const std::string& username, const std::string& filepath);
 };
+
+std::string makeLowercase(const std::string& str);
+
