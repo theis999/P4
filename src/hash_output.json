@@ -1,0 +1,4 @@
+{
+    "argon2_hash": "$argon2id$v=19$m=65536,t=2,p=1$c29tZXNhbHQ$Lkcia0qioJ57KP7OZCMdF1nrFckIsOHME5T5qqhiFDc",
+    "original": "my_secure_password"
+}
