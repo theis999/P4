@@ -1,1 +1,8 @@
-{"dependencies": ["wxwidgets", "openssl"]}
+{
+  "dependencies": [
+    "argon2",
+    "openssl",
+    "wxwidgets",
+    "nlohmann-json"
+  ]
+}
