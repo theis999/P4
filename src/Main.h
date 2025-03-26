@@ -3,6 +3,8 @@
 #include <wx/msgdlg.h>
 #include "STDimport.h"
 #include "iMessage.h"
+#include "LoginController.h"
+#include "UserManager.h"
 
 using std::to_string;
 
@@ -12,7 +14,9 @@ class Main : public ThePier
 
 public:
 	Main();
-	LoginForm* loginForm;
+	LoginForm* m_loginForm;
+	LoginController* m_loginController;
+	UserManager m_userManager;
 
 	void OnChannelsBox(wxCommandEvent& event);
 

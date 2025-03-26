@@ -1,11 +1,12 @@
 #include "Main.h"
-#include "LoginController.h"
 #include "Storage.h"
 #include "Message.h"
+#include "LoginController.h"
+#include "UserManager.h"
 
 static Storage storage;
 
-Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(620, 325), wxDEFAULT_FRAME_STYLE | wxSYSTEM_MENU | wxTAB_TRAVERSAL)
+Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(620, 325), wxDEFAULT_FRAME_STYLE | wxSYSTEM_MENU | wxTAB_TRAVERSAL), m_loginForm(nullptr),m_loginController()
 {
 	storage.OpenStorage("../data.txt"); // expect the file to be located in the project root
 	if (!storage.channels.empty())
@@ -23,13 +24,15 @@ Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(
 	ChatLabel->SetLabel(item);
 	SendBtn->Enable(false);
 
+
+	m_userManager.addUser("Zum", "zum");
+
 	CallAfter([this]()
 	{
-			this->loginForm = new LoginForm(this, wxID_ANY, "Login");
-			LoginController* loginController = new LoginController(this->loginForm);
+			this->m_loginForm = new LoginForm(this, wxID_ANY, "Login");
+			LoginController loginController(this->m_loginForm,&this->m_userManager);
 
-			this->loginForm->ShowModal();
-			this->loginForm->Destroy();
+			this->m_loginForm->ShowModal();
 	});
 }
 

@@ -189,6 +189,7 @@
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="ThePierGUI.cpp" />
     <ClCompile Include="User.cpp" />
+    <ClCompile Include="UserManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cApp.h" />
@@ -202,6 +203,7 @@
     <ClInclude Include="Message.h" />
     <ClInclude Include="ThePierGUI.h" />
     <ClInclude Include="User.h" />
+    <ClInclude Include="UserManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\login.json" />
