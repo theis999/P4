@@ -12,21 +12,36 @@ bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin) 
 		if (peerOrigin == 0)
 		{
 			return true;
-		// END SYNC, we collided on first check, all is good in the world
+		// END SYNC, we collided on first hash, all is good in the world
 		}
 
 
 		// REQUEST MESSAGES FROM peerOrigin
-		// ADD MESSAGES TO OUR LIST & HASH THEM
+
+		vector<iMessage> payload = {}; // !! MAKE THESE THE INCOMING MESSAGES !!
+
+		// ADD MESSAGES TO OUR LIST
+		for (iMessage m : payload)
+		{
+			this->messages.push_back(m);
+		}
+
 		// HASHES SHOULD NOW MATCH
-		
 		// if not then something major broke or transit failed
 		return false;
 	} else 
 
 	if (peerOrigin == 0)
 	{
-		// GET MESSAGES FROM OUR ORIGIN, SEND TO PEER
+		// GET MESSAGES FROM OUR ORIGIN
+		vector<iMessage> payload = {};
+		for (int i = this->messages.size() - clientOrigin; i < this->messages.size(); i++)
+		{
+			payload.push_back(this->messages[i]);
+		}
+
+		// SEND payload TO PEER
+		
 		// AWAIT PEER SYNC HASH CHECK FOR ? TIME
 		return true;
 
@@ -85,7 +100,6 @@ iMessage::shash Channel::computeTestHash(std::string input)
 {
 	unsigned char hash_buffer[SHA256_DIGEST_LENGTH];
 
-	// Create a string combining timestamp, member_id, and text
 	std::ostringstream data_stream{};
 	data_stream << input;
 	std::string data = data_stream.str();
@@ -93,7 +107,6 @@ iMessage::shash Channel::computeTestHash(std::string input)
 	// Compute hash and copy to hash
 	SHA256(reinterpret_cast<const unsigned char*>(data.c_str()), data.size(), hash_buffer);
 	iMessage::shash o;
-	//std::memcpy((void*)&o, hash_buffer, SHA256_DIGEST_LENGTH);
 	return o;
 };
 
@@ -101,13 +114,8 @@ iMessage::shash Channel::computeTestHash(std::string input)
 
 void Channel::sync()
 {
-	// ## THIS FUNCTION SHALL BE MOVED TO BE PART OF CHANNEL, such that network can be used ##
-
-	// DEBUG TBD
-	//vector<string> clientHashes = {"3S597R7AA25VYS6MQHROQ6MVZCY8K3AU", "WJ8JVRYJGAFZC6LLSXMQ7TZKTZTBWT3X"};
-
 	
-	vector<iMessage::shash> peerHashes = {};
+	vector<iMessage::shash> peerHashes = {}; // TBD once function to get n peerHashes is implemented
 
 
 	std::map<iMessage::shash, int> hashMap = {};
@@ -117,18 +125,20 @@ void Channel::sync()
 	Channel::syncOutput x{false, 0, 0};
 	while (1)
 	{
+
+		// vector<iMesssage:shash> peerHashes = FUNCTION TO GET n peerHashes
+
+
+
+
 		// FUNCTION TO GET n clientHashes
 		vector<iMessage::shash> clientHashes = {};
 
 		for (int i = this->messages.size() - global_i - 1; i >= 0 && i >= this->messages.size() - global_i - n; --i)
 		{
-			//wxMessageBox("Text: "+ this->messages[i].text + "   hashash: "+std::to_string(this->messages[i].hasHash()) + "   Hash: " /* + std::to_string(this->messages[i].hash, "!")*/); // DEBUG
-			//wxMessageBox("i: " + std::to_string(i));
 			clientHashes.push_back(this->messages[i].hash);
 		}
 
-
-		// vector<string> peerHashes = FUNCTION TO GET n peerHashes
 		x = findOrigins(hashMap, clientHashes, peerHashes, global_i);
 		if (x.isFinished) break;
 
