@@ -19,15 +19,20 @@ Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(
     }
 
     // ADDED: Ensure chat_history folder exists
-    MessageLogger::EnsureChatHistoryFolder();
+   // MessageLogger::EnsureChatHistoryFolder();
 
     ChannelsBox->SetSelection(storage.currentChannelIndex);
     auto item = ChannelsBox->GetStringSelection();
     ChatLabel->SetLabel(item);
     SendBtn->Enable(false);
 
+    ChatDisplay->Clear();
+    for (auto& m : storage.GetCurrentChannel().messages)
+    {
+        DisplayMsg(m);
+    }
     // ADDED: Load chat history 
-    MessageLogger::LoadChatHistory(ChatDisplay, item);
+   // MessageLogger::LoadChatHistory(ChatDisplay, item);
 }
 
 void Main::OnSendTextChange(wxCommandEvent& event)
@@ -57,7 +62,8 @@ void Main::SendHandler(wxTextCtrl* sendtext) {
     DisplayMsg(m);
 
     // ADDED: Save chat history 
-    MessageLogger::SaveChatHistory(ChatDisplay, ChatLabel->GetLabel());
+    //MessageLogger::SaveChatHistory(ChatDisplay, ChatLabel->GetLabel());
+    storage.AppendMessage(storage.GetCurrentChannel(), m);
 
     sendtext->SetFocus();
 }
@@ -74,7 +80,7 @@ void Main::OnChannelsBox(wxCommandEvent& event) {
     }
 
     // ADDED: Load chat history whenever user switches channels
-    MessageLogger::LoadChatHistory(ChatDisplay, item);
+   // MessageLogger::LoadChatHistory(ChatDisplay, item);
 }
 
 void Main::DisplayMsg(iMessage& m)
