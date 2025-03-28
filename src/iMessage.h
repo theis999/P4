@@ -31,4 +31,5 @@ public:
 
 	bool hasHash();
 	void computeHash();
+	bool operator==(const iMessage& rhs) const;
 };

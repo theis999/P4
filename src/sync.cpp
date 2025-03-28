@@ -4,6 +4,8 @@
 #include <wx/msgdlg.h>
 #include <cstring>
 #include <sstream>
+#include "Storage.h"
+//Storage.h must be includd after wx/msgdlg.h, if not then the program won't compile and errors with a ton of syntax errors
 
 bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin) // returns true when successful
 {
@@ -20,6 +22,14 @@ bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin) 
 
 		vector<iMessage> payload = {}; // !! MAKE THESE THE INCOMING MESSAGES !!
 
+		// DEBUG/TEST
+		extern Storage peerTestStorage;
+		payload.push_back(peerTestStorage.GetCurrentChannel().messages[3]);
+		payload.push_back(peerTestStorage.GetCurrentChannel().messages[4]);
+		payload.push_back(peerTestStorage.GetCurrentChannel().messages[5]);
+
+
+
 		// ADD MESSAGES TO OUR LIST
 		for (iMessage m : payload)
 		{
@@ -28,6 +38,10 @@ bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin) 
 
 		// HASHES SHOULD NOW MATCH
 		// if not then something major broke or transit failed
+		//bool x = std::equal(peerTestStorage.GetCurrentChannel().messages.begin(), peerTestStorage.GetCurrentChannel().messages.end(), this->messages.begin());
+		bool x = (peerTestStorage.GetCurrentChannel().messages == this->messages);
+
+
 		return false;
 	} else 
 
@@ -99,7 +113,9 @@ Channel::syncOutput Channel::findOrigins(std::map<iMessage::shash, int>&hashMap,
 void Channel::sync()
 {
 	
-	vector<iMessage::shash> peerHashes = {}; // TBD once function to get n peerHashes is implemented
+	//vector<iMessage::shash> peerHashes = {}; // TBD once function to get n peerHashes is implemented
+
+
 
 
 	std::map<iMessage::shash, int> hashMap = {};
@@ -110,9 +126,16 @@ void Channel::sync()
 	while (1)
 	{
 
-		// vector<iMesssage:shash> peerHashes = FUNCTION TO GET n peerHashes
+		vector<iMessage::shash> peerHashes = {}; //FUNCTION TO GET n peerHashes
 
-
+		// DEBUG/TEST
+		extern Storage peerTestStorage;
+		peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[5].hash);
+		peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[4].hash);
+		peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[3].hash);
+		peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[2].hash);
+		peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[1].hash);
+		peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[0].hash);
 
 
 		// FUNCTION TO GET n clientHashes
