@@ -42,7 +42,6 @@ bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin) 
 
 		// SEND payload TO PEER
 		
-		// AWAIT PEER SYNC HASH CHECK FOR ? TIME
 		return true;
 
 	} else {
@@ -95,22 +94,6 @@ Channel::syncOutput Channel::findOrigins(std::map<iMessage::shash, int>&hashMap,
 	return syncOutput(false, 0, 0); // no Origins found this time.
 
 };
-
-/*
-iMessage::shash Channel::computeTestHash(std::string input)
-{
-	unsigned char hash_buffer[SHA256_DIGEST_LENGTH];
-
-	std::ostringstream data_stream{};
-	data_stream << input;
-	std::string data = data_stream.str();
-
-	// Compute hash and copy to hash
-	SHA256(reinterpret_cast<const unsigned char*>(data.c_str()), data.size(), hash_buffer);
-	iMessage::shash o;
-	return o;
-};*/
-
 
 
 void Channel::sync()
