@@ -96,6 +96,7 @@ Channel::syncOutput Channel::findOrigins(std::map<iMessage::shash, int>&hashMap,
 
 };
 
+/*
 iMessage::shash Channel::computeTestHash(std::string input)
 {
 	unsigned char hash_buffer[SHA256_DIGEST_LENGTH];
@@ -108,7 +109,7 @@ iMessage::shash Channel::computeTestHash(std::string input)
 	SHA256(reinterpret_cast<const unsigned char*>(data.c_str()), data.size(), hash_buffer);
 	iMessage::shash o;
 	return o;
-};
+};*/
 
 
 
