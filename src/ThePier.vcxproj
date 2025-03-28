@@ -186,6 +186,8 @@
     <ClCompile Include="MainTest.cpp" />
     <ClCompile Include="Member.cpp" />
     <ClCompile Include="MessageLogger.cpp" />
+    <ClCompile Include="PierEndpoint.cpp" />
+    <ClCompile Include="PierProto.cpp" />
     <ClCompile Include="sync.cpp" />
     <ClCompile Include="Storage.cpp" />
     <ClCompile Include="Message.cpp" />
@@ -198,6 +200,8 @@
     <ClInclude Include="iMessage.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="Member.h" />
+    <ClInclude Include="PierEndpoint.h" />
+    <ClInclude Include="PierProto.h" />
     <ClInclude Include="sync.h" />
     <ClInclude Include="MessageLogger.h" />
     <ClInclude Include="STDimport.h" />

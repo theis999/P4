@@ -39,3 +39,8 @@ void iMessage::computeHash()
 	SHA256(reinterpret_cast<const unsigned char*>(data.c_str()), data.size(), hash_buffer);
 	std::memcpy(hash.data(), hash_buffer, SHA256_DIGEST_LENGTH);
 }
+
+bool iMessage::operator==(const iMessage& rhs) const
+{
+	return hash == rhs.hash;
+}

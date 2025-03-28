@@ -1,1 +1,8 @@
-{"dependencies": ["wxwidgets", "openssl", "boost"]}
+{
+  "dependencies": [
+    "boost",
+    "boost-asio",
+    "openssl",
+    "wxwidgets"
+  ]
+}
