@@ -3,15 +3,21 @@
 #include <vector>
 #include "Channel.h"
 #include "iMessage.h"
-#include "Storage.h"
+#include "Storage.h"    
 
 typedef uint16_t Port_t;
 
-enum RequestType {
+enum RequestType
+{
     JOIN = 0,
     INVITE,
     MESSAGE,
-    SYNC,
+    MESSAGE_REQUEST,
+    MESSAGE_MULTI,
+    SYNC_PROBE,
+    SYNC_STATUS,
+    SHASH_REQUEST,
+    SHASH_MULTI,
     CHANGEIP,
     REQUESTTYPE_END
 };
@@ -27,31 +33,51 @@ class PierRequest {
 };
 
 // Request for joining a channel with a ticket.
-class JoinRequest : PierRequest {
+class JoinNetTransfer : PierRequest {
     std::vector<std::byte> ticket;
  public:   
-    JoinRequest(uint32_t _sender_GUID, uint32_t _channel_GUID, std::vector<std::byte> _ticket);
+    JoinNetTransfer(uint32_t _sender_GUID, uint32_t _channel_GUID, std::vector<std::byte> _ticket);
 };
 
 // Request for inviting a peer to a channel, supplying the necessary ticket.
-class InviteRequest : PierRequest {
+class InviteNetTransfer : PierRequest {
     std::vector<std::byte> ticket;
  public:
-    InviteRequest(uint32_t _sender_GUID, uint32_t _channel_GUID, std::vector<std::byte> _ticket);
+    InviteNetTransfer(uint32_t _sender_GUID, uint32_t _channel_GUID, std::vector<std::byte> _ticket);
 };
 
-class MessageRequest : PierRequest {
+class MessageNetTransfer : PierRequest {
     std::vector<std::byte> message_contents;
  public:
-    MessageRequest(uint32_t _sender_GUID, uint32_t _channel_GUID, std::vector<std::byte> message);
+    MessageNetTransfer(uint32_t _sender_GUID, uint32_t _channel_GUID, std::vector<std::byte> message);
 };
 
-class SyncRequest : PierRequest {
-    uint32_t checksum;
+class MessageRequestNetTransfer : PierRequest {
+    std::array<std::byte, 32> hash;
+ public:
+    MessageRequestNetTransfer(uint32_t _sender_GUID, uint32_t _channel_GUID, std::array<std::byte, 32> _hash);
+};
+
+class MessageMultiNetTransfer : PierRequest {
+    std::vector<iMessage> msgs;
+public:
+    MessageMultiNetTransfer(uint32_t _sender_GUID, uint32_t _channel_GUID, std::vector<iMessage> _msgs);
+
+};
+
+class SyncProbeNetTransfer : PierRequest {
+    std::array<std::byte, 32> hash;
  public:
     // Needs to know how sync works before implementing.
-    SyncRequest(uint32_t _sender_GUID, uint32_t _channel_GUID, uint32_t _checksum);
+    SyncProbeNetTransfer(uint32_t _sender_GUID, uint32_t _channel_GUID, std::array<std::byte, 32> _hash);
 };
+
+class SyncStatusNetTransfer : PierRequest {
+    uint8_t status;
+ public:
+    SyncStatusNetTransfer(uint32_t _sender_GUID, uint32_t _channel_GUID, uint8_t status);
+};
+
 
 // No idea if we need/want this.
 class ChangeIPRequest : PierRequest {
