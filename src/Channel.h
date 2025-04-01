@@ -7,6 +7,7 @@
 
 using std::vector;
 
+
 class Channel
 {
 protected:
@@ -23,4 +24,17 @@ public:
 	Channel(string name, bool active = true);
 
 	string ToFileString();
+
+	struct syncOutput
+	{
+		bool isFinished;
+		int clientOrigin, peerOrigin;
+	};
+
+
+	// Sync related functions, found in sync.ccp
+	void sync();
+	bool resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin);
+	syncOutput findOrigins(std::map<iMessage::shash, int>& hashMap, vector<iMessage::shash> clientHashes, vector<iMessage::shash> peerHashes, int global_i);
+
 };

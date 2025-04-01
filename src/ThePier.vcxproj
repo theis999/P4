@@ -186,6 +186,7 @@
     <ClCompile Include="MainTest.cpp" />
     <ClCompile Include="Member.cpp" />
     <ClCompile Include="MessageLogger.cpp" />
+    <ClCompile Include="sync.cpp" />
     <ClCompile Include="Storage.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="ThePierGUI.cpp" />
@@ -197,12 +198,16 @@
     <ClInclude Include="iMessage.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="Member.h" />
+    <ClInclude Include="sync.h" />
     <ClInclude Include="MessageLogger.h" />
     <ClInclude Include="STDimport.h" />
     <ClInclude Include="Storage.h" />
     <ClInclude Include="Message.h" />
     <ClInclude Include="ThePierGUI.h" />
     <ClInclude Include="User.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="boat.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
