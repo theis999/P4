@@ -1,1 +1,1 @@
-{"dependencies": ["wxwidgets", "openssl"]}
+{"dependencies": ["wxwidgets", "openssl", "boost"]}

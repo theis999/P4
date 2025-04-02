@@ -1,13 +1,19 @@
 #pragma once
-#include "PierProto.h"
+#include <winsock.h>
 #include "iMessage.h"
+
+/* TEMPORARY CLASS ONLY - REMOVE IF SHASH EXISTS */
+
+/* TEMPORARY CLASS END */
 
 enum PierErr_t {
 	OK = 0,
 	ERR,
 	HASH_MISMATCH,
 	FAILED_SEND,
-	FAILED_RECEIVE,
+	SYNC_PROBE_DENIED,
+	SHASH_REQUEST_DENIED,
+	MSG_REQUEST_DENIED,
 };
 
 class PierEndpoint {
