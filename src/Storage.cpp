@@ -32,7 +32,7 @@ static bool read_segment(std::ifstream& file, vector<string>& data)
 	return false;
 }
 
-static string hash_to_string(std::array<std::byte, 32> bytes)
+static string hash_to_string(iMessage::shash bytes)
 {
 	char s[65];
 	for (int i = 0; i < 32; i++)
@@ -47,9 +47,9 @@ static string hash_to_string(std::array<std::byte, 32> bytes)
 	return s;
 }
 
-static std::array<std::byte, 32> string_to_hash(string hexidecimal)
+static iMessage::shash string_to_hash(string hexidecimal)
 {
-	std::array<std::byte, 32> out{};
+	iMessage::shash out{};
 	
 	auto in = hexidecimal.c_str();
 	for (int i = 0; i < 32; i++)
