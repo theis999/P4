@@ -22,6 +22,7 @@
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="MessageLogger.cpp" />
     <ClCompile Include="MainTest.cpp" />
+    <ClCompile Include="PierProto.cpp" />
     <ClCompile Include="sync.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -38,6 +39,7 @@
     <ClInclude Include="STDimport.h" />
     <ClInclude Include="User.h" />
     <ClInclude Include="MessageLogger.h" />
+    <ClInclude Include="PierProto.h" />
     <ClInclude Include="sync.h" />
   </ItemGroup>
 </Project>
