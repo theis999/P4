@@ -16,7 +16,6 @@ public:
 	string name;
 	bool active;
 	int channel_id;
-	string passcode;
 
 	vector<Member> members;
 	vector<iMessage> messages;
