@@ -19,12 +19,11 @@ public:
 	iMessage(time_t timestamp, int member_id, string text, shash hash);
 	iMessage(time_t timestamp, int member_id, string text, shash hash, shash chainHash);
 
+	string FormatToPrint(string user_name);
 
 	time_t timestamp; // When the message was sent
 	int member_id; // Who sent the message
 	string text; // What was sent
-
-	
 
 	shash hash;
 	shash chainHash; //missing implementation

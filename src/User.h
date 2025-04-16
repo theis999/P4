@@ -49,4 +49,3 @@ public:
 };
 
 std::string makeLowercase(const std::string& str);
-

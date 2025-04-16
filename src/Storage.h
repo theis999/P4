@@ -3,7 +3,6 @@
 #include "STDimport.h"
 #include "Channel.h"
 #include "User.h"
-#include "Member.h"
 #include "iMessage.h"
 
 /// <summary>
@@ -25,6 +24,4 @@ public:
 	Channel& GetCurrentChannel();
 
 	string ToFileString();
-
-
 };
