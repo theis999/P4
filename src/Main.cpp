@@ -1,7 +1,6 @@
 #include "Main.h"
 #include "Storage.h"
 #include "Message.h"
-#include "MessageLogger.h" 
 
 
 static Storage storage;
