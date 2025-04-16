@@ -48,7 +48,13 @@ ThePier::ThePier( wxWindow* parent, wxWindowID id, const wxString& title, const 
 	ChatLabel->Wrap( -1 );
 	ChatLabel->SetFont( wxFont( 12, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
 
-	ChatPanelSizer->Add( ChatLabel, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5 );
+	ChatPanelSizer->Add( ChatLabel, 0, wxALL|wxALIGN_CENTER_HORIZONTAL, 5 );
+
+	wxBoxSizer* bSizer13;
+	bSizer13 = new wxBoxSizer( wxVERTICAL );
+
+
+	ChatPanelSizer->Add( bSizer13, 1, wxEXPAND, 5 );
 
 	m_staticline5 = new wxStaticLine( ChatPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
 	ChatPanelSizer->Add( m_staticline5, 0, wxEXPAND | wxALL, 5 );
@@ -92,6 +98,34 @@ ThePier::ThePier( wxWindow* parent, wxWindowID id, const wxString& title, const 
 	ChatPanelSizer->Fit( ChatPanel );
 	MainSizer->Add( ChatPanel, 1, wxEXPAND|wxLEFT, 5 );
 
+	ChannelData = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer11;
+	bSizer11 = new wxBoxSizer( wxVERTICAL );
+
+	CurrentUserLabel = new wxStaticText( ChannelData, wxID_ANY, _("User: Not logged in"), wxDefaultPosition, wxSize( 110,20 ), 0 );
+	CurrentUserLabel->Wrap( -1 );
+	CurrentUserLabel->SetFont( wxFont( 9, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial") ) );
+
+	bSizer11->Add( CurrentUserLabel, 0, wxALL, 5 );
+
+	m_staticline3 = new wxStaticLine( ChannelData, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
+	bSizer11->Add( m_staticline3, 0, wxEXPAND | wxALL, 5 );
+
+	ChannelMembers = new wxListBox( ChannelData, wxID_ANY, wxDefaultPosition, wxSize( 105,165 ), 0, NULL, 0 );
+	bSizer11->Add( ChannelMembers, 0, wxALL, 5 );
+
+	CreateNewUserButton = new wxButton( ChannelData, wxID_ANY, _("Create User"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer11->Add( CreateNewUserButton, 0, wxALL|wxBOTTOM|wxEXPAND, 5 );
+
+	LoginButton = new wxButton( ChannelData, wxID_ANY, _("Login"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer11->Add( LoginButton, 0, wxALL|wxEXPAND, 5 );
+
+
+	ChannelData->SetSizer( bSizer11 );
+	ChannelData->Layout();
+	bSizer11->Fit( ChannelData );
+	MainSizer->Add( ChannelData, 1, wxEXPAND|wxLEFT, 5 );
+
 
 	this->SetSizer( MainSizer );
 	this->Layout();
@@ -104,6 +138,8 @@ ThePier::ThePier( wxWindow* parent, wxWindowID id, const wxString& title, const 
 	SendText->Connect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( ThePier::OnSendTextChange ), NULL, this );
 	SendText->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( ThePier::OnSendTextEnter ), NULL, this );
 	SendBtn->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ThePier::OnSend ), NULL, this );
+	CreateNewUserButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ThePier::ClickCreateNewUser ), NULL, this );
+	LoginButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ThePier::LoginButtonClick ), NULL, this );
 }
 
 ThePier::~ThePier()
@@ -114,5 +150,87 @@ ThePier::~ThePier()
 	SendText->Disconnect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( ThePier::OnSendTextChange ), NULL, this );
 	SendText->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( ThePier::OnSendTextEnter ), NULL, this );
 	SendBtn->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ThePier::OnSend ), NULL, this );
+	CreateNewUserButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ThePier::ClickCreateNewUser ), NULL, this );
+	LoginButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ThePier::LoginButtonClick ), NULL, this );
+
+}
+
+LoginForm::LoginForm( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
+{
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+
+	wxBoxSizer* LoginSizer;
+	LoginSizer = new wxBoxSizer( wxVERTICAL );
+
+	wxBoxSizer* InputSizer;
+	InputSizer = new wxBoxSizer( wxVERTICAL );
+
+	wxBoxSizer* UsernameSizer;
+	UsernameSizer = new wxBoxSizer( wxHORIZONTAL );
+
+	DisplayNameLabel = new wxStaticText( this, wxID_ANY, _("Display Name:"), wxDefaultPosition, wxDefaultSize, 0 );
+	DisplayNameLabel->Wrap( -1 );
+	UsernameSizer->Add( DisplayNameLabel, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+	UsernameTextBox = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( -1,-1 ), wxTE_PROCESS_ENTER );
+	UsernameSizer->Add( UsernameTextBox, 1, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+
+	InputSizer->Add( UsernameSizer, 1, wxEXPAND, 5 );
+
+	wxBoxSizer* PasswordSizer;
+	PasswordSizer = new wxBoxSizer( wxHORIZONTAL );
+
+	PasscodeLabel = new wxStaticText( this, wxID_ANY, _("Passcode: "), wxDefaultPosition, wxSize( -1,-1 ), 0 );
+	PasscodeLabel->Wrap( -1 );
+	PasswordSizer->Add( PasscodeLabel, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+	PasswordTextBox = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( -1,-1 ), wxTE_PASSWORD|wxTE_PROCESS_ENTER );
+	PasswordSizer->Add( PasswordTextBox, 1, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+
+	InputSizer->Add( PasswordSizer, 1, wxEXPAND, 5 );
+
+
+	LoginSizer->Add( InputSizer, 1, wxEXPAND, 5 );
+
+	wxBoxSizer* TrySizer;
+	TrySizer = new wxBoxSizer( wxHORIZONTAL );
+
+	LoginButton = new wxButton( this, wxID_ANY, _("Login"), wxDefaultPosition, wxDefaultSize, 0 );
+	TrySizer->Add( LoginButton, 0, wxALL, 5 );
+
+	WrongMessageLabel = new wxStaticText( this, wxID_ANY, _("Wrong username or key. Try again."), wxDefaultPosition, wxDefaultSize, 0 );
+	WrongMessageLabel->Wrap( -1 );
+	WrongMessageLabel->SetForegroundColour( wxColour( 255, 0, 0 ) );
+	WrongMessageLabel->Hide();
+
+	TrySizer->Add( WrongMessageLabel, 0, wxALL, 5 );
+
+
+	LoginSizer->Add( TrySizer, 1, wxEXPAND, 5 );
+
+
+	this->SetSizer( LoginSizer );
+	this->Layout();
+
+	this->Centre( wxBOTH );
+
+	// Connect Events
+	UsernameTextBox->Connect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( LoginForm::OnLoginInput ), NULL, this );
+	UsernameTextBox->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( LoginForm::TryLogin ), NULL, this );
+	PasswordTextBox->Connect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( LoginForm::OnLoginInput ), NULL, this );
+	PasswordTextBox->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( LoginForm::TryLogin ), NULL, this );
+	LoginButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( LoginForm::TryLogin ), NULL, this );
+}
+
+LoginForm::~LoginForm()
+{
+	// Disconnect Events
+	UsernameTextBox->Disconnect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( LoginForm::OnLoginInput ), NULL, this );
+	UsernameTextBox->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( LoginForm::TryLogin ), NULL, this );
+	PasswordTextBox->Disconnect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( LoginForm::OnLoginInput ), NULL, this );
+	PasswordTextBox->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( LoginForm::TryLogin ), NULL, this );
+	LoginButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( LoginForm::TryLogin ), NULL, this );
 
 }

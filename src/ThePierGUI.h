@@ -26,6 +26,7 @@
 #include <wx/image.h>
 #include <wx/icon.h>
 #include <wx/frame.h>
+#include <wx/dialog.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -47,6 +48,12 @@ class ThePier : public wxFrame
 		wxTextCtrl* ChatDisplay;
 		wxTextCtrl* SendText;
 		wxButton* SendBtn;
+		wxPanel* ChannelData;
+		wxStaticText* CurrentUserLabel;
+		wxStaticLine* m_staticline3;
+		wxListBox* ChannelMembers;
+		wxButton* CreateNewUserButton;
+		wxButton* LoginButton;
 
 		// Virtual event handlers, override them in your derived class
 		virtual void OnChannelsBox( wxCommandEvent& event ) { event.Skip(); }
@@ -54,14 +61,44 @@ class ThePier : public wxFrame
 		virtual void OnSendTextChange( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnSendTextEnter( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnSend( wxCommandEvent& event ) { event.Skip(); }
+		virtual void ClickCreateNewUser( wxCommandEvent& event ) { event.Skip(); }
+		virtual void LoginButtonClick( wxCommandEvent& event ) { event.Skip(); }
 
 
 	public:
 		wxButton* test_button;
 
-		ThePier( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 620,325 ), long style = wxCAPTION|wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
+		ThePier( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 710,325 ), long style = wxCAPTION|wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 
 		~ThePier();
+
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/// Class LoginForm
+///////////////////////////////////////////////////////////////////////////////
+class LoginForm : public wxDialog
+{
+	private:
+
+	protected:
+		wxStaticText* DisplayNameLabel;
+		wxStaticText* PasscodeLabel;
+
+		// Virtual event handlers, override them in your derived class
+		virtual void OnLoginInput( wxCommandEvent& event ) { event.Skip(); }
+		virtual void TryLogin( wxCommandEvent& event ) { event.Skip(); }
+
+
+	public:
+		wxTextCtrl* UsernameTextBox;
+		wxTextCtrl* PasswordTextBox;
+		wxButton* LoginButton;
+		wxStaticText* WrongMessageLabel;
+
+		LoginForm( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Login"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 320,150 ), long style = wxDEFAULT_DIALOG_STYLE );
+
+		~LoginForm();
 
 };
 

@@ -23,6 +23,7 @@
     <ClCompile Include="MessageLogger.cpp" />
     <ClCompile Include="MainTest.cpp" />
     <ClCompile Include="sync.cpp" />
+    <ClCompile Include="LoginController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ThePierGUI.h">
@@ -37,6 +38,7 @@
     <ClInclude Include="iMessage.h" />
     <ClInclude Include="STDimport.h" />
     <ClInclude Include="User.h" />
+    <ClInclude Include="LoginController.h" />
     <ClInclude Include="MessageLogger.h" />
     <ClInclude Include="sync.h" />
   </ItemGroup>

@@ -12,6 +12,7 @@ bool cApp::OnInit()
 	m_frame1 = new Main();
 	m_frame1->SetIcon(*(new wxIcon(wxT("boat.ico"), wxBITMAP_TYPE_ICO)));
 	m_frame1->Show();
+	m_frame1->DoLogin();
 
 	return true;
 };
