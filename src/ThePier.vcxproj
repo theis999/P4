@@ -199,7 +199,6 @@
     <ClInclude Include="LoginController.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="Member.h" />
-    <ClInclude Include="sync.h" />
     <ClInclude Include="STDimport.h" />
     <ClInclude Include="Storage.h" />
     <ClInclude Include="ThePierGUI.h" />

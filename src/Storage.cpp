@@ -40,8 +40,8 @@ static string hash_to_string(iMessage::shash bytes)
 		auto byte = (int)(bytes[i]);
 		auto a = (byte & 0xF0) >> 4;
 		auto b = byte & 0x0F;
-		s[i*2] = (char)(a < 10 ? '0' + a : 'a' + a - 10);
-		s[i*2+1] = (char)(b < 10 ? '0' + b : 'a' + b - 10);
+		s[i * 2] = (char)(a < 10 ? '0' + a : 'a' + a - 10);
+		s[i * 2 + 1] = (char)(b < 10 ? '0' + b : 'a' + b - 10);
 	}
 	s[64] = 0;
 	return s;
@@ -50,7 +50,7 @@ static string hash_to_string(iMessage::shash bytes)
 static iMessage::shash string_to_hash(string hexidecimal)
 {
 	iMessage::shash out{};
-	
+
 	auto in = hexidecimal.c_str();
 	for (int i = 0; i < 32; i++)
 	{
@@ -104,13 +104,13 @@ void Storage::AppendMessage(Channel c, iMessage msg)
 			//wxMessageBox("Failed to create chat history file", "Error");
 			return;
 		}
-		createFile << msg.timestamp << ";" << std::to_string(msg.member_id) << ";" << msg.text << ";" << hash_to_string(msg.hash) << std::endl ;
+		createFile << msg.timestamp << ";" << std::to_string(msg.member_id) << ";" << msg.text << ";" << hash_to_string(msg.hash) << std::endl;
 
 		createFile.close();
 		return;
 	}
 
-	inFile << msg.timestamp << ";" << std::to_string(msg.member_id) << ";" << msg.text << ";" << hash_to_string(msg.hash) << std::endl ;
+	inFile << msg.timestamp << ";" << std::to_string(msg.member_id) << ";" << msg.text << ";" << hash_to_string(msg.hash) << std::endl;
 	inFile.close();
 	return;
 }

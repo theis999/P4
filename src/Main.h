@@ -20,8 +20,6 @@ public:
 
 	void DisplayMsg(iMessage& m);
 
-	bool PromptLogin(std::string& outUsername);
-
 	void OnSendTextChange(wxCommandEvent& event);
 	void OnSendTextEnter(wxCommandEvent& event);
 	void OnSend(wxCommandEvent& event);
@@ -32,6 +30,7 @@ public:
 	void ClickCreateNewUser(wxCommandEvent& event);
 	void LoginButtonClick(wxCommandEvent& event);
 	void UpdateLoginButtonLabel();
+	bool PromptLogin(std::string& outUsername);
 
 	void RunTest(wxCommandEvent& event);
 

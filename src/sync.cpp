@@ -14,7 +14,7 @@ bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin) 
 		if (peerOrigin == 0)
 		{
 			return true;
-		// END SYNC, we collided on first hash, all is good in the world
+			// END SYNC, we collided on first hash, all is good in the world
 		}
 
 
@@ -43,33 +43,36 @@ bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin) 
 
 
 		return false;
-	} else 
-
-	if (peerOrigin == 0)
-	{
-		// GET MESSAGES FROM OUR ORIGIN
-		vector<iMessage> payload = {};
-		for (int i = this->messages.size() - clientOrigin; i < this->messages.size(); i++)
-		{
-			payload.push_back(this->messages[i]);
-		}
-
-		// SEND payload TO PEER
-		
-		return true;
-
-	} else {
-		
-		// REQUEST MESSAGES FROM peerOrigin
-		// SORT MESSAGES FROM clientOrigin with messages from peerOrigin
-		// 
-	
 	}
+	else
+
+		if (peerOrigin == 0)
+		{
+			// GET MESSAGES FROM OUR ORIGIN
+			vector<iMessage> payload = {};
+			for (int i = this->messages.size() - clientOrigin; i < this->messages.size(); i++)
+			{
+				payload.push_back(this->messages[i]);
+			}
+
+			// SEND payload TO PEER
+
+			return true;
+
+		}
+		else
+		{
+
+			// REQUEST MESSAGES FROM peerOrigin
+			// SORT MESSAGES FROM clientOrigin with messages from peerOrigin
+			// 
+
+		}
 
 	return true;
 };
 
-Channel::syncOutput Channel::findOrigins(std::map<iMessage::shash, int>&hashMap, vector<iMessage::shash> clientHashes, vector<iMessage::shash> peerHashes, int global_i)
+Channel::syncOutput Channel::findOrigins(std::map<iMessage::shash, int>& hashMap, vector<iMessage::shash> clientHashes, vector<iMessage::shash> peerHashes, int global_i)
 {
 	int clientOrigin;
 	int peerOrigin;
@@ -77,7 +80,7 @@ Channel::syncOutput Channel::findOrigins(std::map<iMessage::shash, int>&hashMap,
 	int sizePeerHashes = peerHashes.size();
 
 	for (int local_i = 0; local_i < std::max(sizeClientHashes, sizePeerHashes); local_i++)
-	{ 
+	{
 		if (local_i < sizeClientHashes)
 		{
 			auto a = hashMap.insert({clientHashes[local_i], local_i + global_i});
@@ -87,7 +90,7 @@ Channel::syncOutput Channel::findOrigins(std::map<iMessage::shash, int>&hashMap,
 				auto& [key, value] = *a.first; // grab key and value, from the pair where insert failed
 				peerOrigin = value;
 				return syncOutput(true, clientOrigin, peerOrigin);
-			
+
 			}
 		}
 
@@ -104,7 +107,7 @@ Channel::syncOutput Channel::findOrigins(std::map<iMessage::shash, int>&hashMap,
 		}
 	}
 
-	
+
 	return syncOutput(false, 0, 0); // no Origins found this time.
 
 };
@@ -112,7 +115,7 @@ Channel::syncOutput Channel::findOrigins(std::map<iMessage::shash, int>&hashMap,
 
 void Channel::sync()
 {
-	
+
 	//vector<iMessage::shash> peerHashes = {}; // TBD once function to get n peerHashes is implemented
 
 

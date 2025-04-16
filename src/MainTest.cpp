@@ -9,10 +9,10 @@ Storage peerTestStorage;
 void Main::RunTest(wxCommandEvent& event)
 {
 	// test code
-	
-    testStorage.OpenStorage("../data.txt"); // expect the file to be located in the project root
+
+	testStorage.OpenStorage("../data.txt"); // expect the file to be located in the project root
 	peerTestStorage.OpenStorage("../data.txt");
-	
+
 	time_t timestamp;
 	time(&timestamp);
 
@@ -29,14 +29,14 @@ void Main::RunTest(wxCommandEvent& event)
 	//testStorage.GetCurrentChannel().messages.push_back(testMessage3);
 	//testStorage.GetCurrentChannel().messages.push_back(testMessage4);
 	//testStorage.GetCurrentChannel().messages.push_back(testMessage5);
-	
+
 	peerTestStorage.GetCurrentChannel().messages.push_back(testMessage0);
 	peerTestStorage.GetCurrentChannel().messages.push_back(testMessage1);
 	peerTestStorage.GetCurrentChannel().messages.push_back(testMessage2);
 	peerTestStorage.GetCurrentChannel().messages.push_back(testMessage3);
 	peerTestStorage.GetCurrentChannel().messages.push_back(testMessage4);
 	peerTestStorage.GetCurrentChannel().messages.push_back(testMessage5);
-	
+
 	testStorage.GetCurrentChannel().sync();
 
 }

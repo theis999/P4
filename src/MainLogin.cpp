@@ -1,5 +1,5 @@
 #pragma once
-
+#include "wx/wx.h"
 #include "Main.h"
 
 bool Main::PromptLogin(std::string& outUsername)

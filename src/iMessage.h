@@ -25,8 +25,6 @@ public:
 	int member_id; // Who sent the message
 	string text; // What was sent
 
-	
-
 	shash hash;
 	shash chainHash; //missing implementation
 
