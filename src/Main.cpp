@@ -1,7 +1,5 @@
 #include "Main.h"
 #include "Storage.h"
-#include "Message.h"
-
 
 static Storage storage;
 
@@ -85,8 +83,7 @@ void Main::OnChannelsBox(wxCommandEvent& event)
 
 void Main::DisplayMsg(iMessage& m)
 {
-    auto msg = Message(m.timestamp, storage.GetCurrentChannel().members[m.member_id].name, wxString(m.text)).FormatToPrint();
-    ChatDisplay->AppendText(msg);
+    ChatDisplay->AppendText(m.FormatToPrint(storage.GetCurrentChannel().members[m.member_id].name));
 }
 
 bool Main::PromptLogin(std::string& outUsername) 

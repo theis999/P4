@@ -2,6 +2,8 @@
 #include <openssl/sha.h>
 #include <cstring>
 #include <sstream>
+#include <format>
+#include "time.h"
 
 iMessage::iMessage(time_t _timestamp, int _member_id, string _text) :
 	timestamp(_timestamp), member_id(_member_id), text(_text)
@@ -19,6 +21,14 @@ iMessage::iMessage(time_t _timestamp, int _member_id, string _text, shash _hash,
 	timestamp(_timestamp), member_id(_member_id), text(_text), hash(_hash), chainHash(_chainHash)
 {
 	computeHash();
+}
+
+string iMessage::FormatToPrint(string user_name)
+{
+	char timefmtstring[std::size("yyyy-mm-ddThh:mm:ssZ")];
+	std::strftime(std::data(timefmtstring), std::size(timefmtstring), "%H:%M", std::localtime(&timestamp));
+
+	return std::format("{} {}: {}\n", string(timefmtstring), user_name, text);
 }
 
 bool iMessage::hasHash()
