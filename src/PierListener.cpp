@@ -14,7 +14,6 @@ void tcp_connection::start_write(const_buffer data)
 	sock.async_send(data, std::bind(&tcp_connection::handle_write, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
 }
 
-
 // TODO: Get the read data out.
 void tcp_connection::handle_first_read(const boost::system::error_code& err, size_t bytes_read)
 {
