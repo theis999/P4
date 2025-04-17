@@ -2,6 +2,8 @@
 #include <boost/asio.hpp>
 #include <memory>
 
+
+
 using namespace boost::asio;
 using boost::asio::ip::tcp;
 using boost::asio::io_context;
@@ -45,5 +47,18 @@ private:
 
 class PierListener
 {
+public:
+	PierListener(io_context& io);
+	static constexpr int default_listening_port = 10000;
+
+private:
+	// Start accepting connections.
+	void start_accept();
+
+	// Handler function called after accept.
+	void handle_accept(tcp_connection::ptr new_conn, const boost::system::error_code& err);
+
+	io_context& io_;
+	tcp::acceptor acceptor;
 };
 
