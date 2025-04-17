@@ -2,8 +2,6 @@
 #include <boost/asio.hpp>
 #include <memory>
 
-
-
 using namespace boost::asio;
 using boost::asio::ip::tcp;
 using boost::asio::io_context;
@@ -11,7 +9,6 @@ using boost::asio::io_context;
 class tcp_connection : std::enable_shared_from_this<tcp_connection>
 {
 
-	
 public:
 	typedef std::shared_ptr<tcp_connection> ptr;
 
