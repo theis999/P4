@@ -11,6 +11,7 @@ PierClient::PierClient(io_context& io, tcp::endpoint endpoint) : io_(io), sock(i
 
 void PierClient::write(const_buffer data)
 {
+	// We sleep the thread and try again if not connected.
 	if (!connected)
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -24,6 +25,27 @@ void PierClient::write(const_buffer data)
 void PierClient::close()
 {
 	sock.close();
+}
+
+void PierClient::write_several_peers(std::vector<tcp::endpoint> endpoints, const_buffer data)
+{
+	io_context io;
+	// Work guard stops io.run() from returning when it has ran out of work.
+	auto wg = make_work_guard(io);
+
+	// Create a thread for io_context.
+	std::thread io_thread( [&io](){io.run();} );
+	
+	std::vector<PierClient> clients{};
+	for (auto& peer : endpoints)
+	{
+		clients.emplace_back(io, peer);
+		clients.back().write(data);
+	}
+	// Allow io.run() to return.
+	wg.reset();
+	io_thread.join();
+
 }
 
 void PierClient::do_connect(const tcp::endpoint endpoint)
