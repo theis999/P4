@@ -2,7 +2,6 @@
 #include <boost/asio.hpp>
 #include <memory>
 
-using namespace boost::asio;
 using boost::asio::ip::tcp;
 using boost::asio::io_context;
 
@@ -22,7 +21,7 @@ public:
 	void start_receive();
 
 	// Write data over the connection. The const_buffer must be valid while the write completes asynchronously.
-	void start_write(const_buffer data);
+	void start_write(boost::asio::const_buffer data);
 
 private:
 	tcp_connection(io_context& io) : io_(io), sock(io) {};
