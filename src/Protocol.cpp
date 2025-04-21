@@ -1,5 +1,7 @@
 #include "Protocol.h"
+#include "Storage.h"
 #include "cstring"
+#include "PierClient.h"
 
 std::array<char, 40> PierProtocol::encode_header(PierHeader header)
 {
@@ -38,4 +40,36 @@ PierProtocol::PierHeader PierProtocol::decode_header(boost::asio::const_buffer h
     };
     
     return out;
+}
+
+void PierProtocol::SendMSG(Channel ch, iMessage msg)
+{
+    std::vector<boost::asio::ip::tcp::endpoint> endpoints;
+
+    PierHeader header
+    {
+        .type = MESSAGE,
+        //.sender_GUID = user_guid
+        .channel_GUID = ch.channel_id,
+        .size = msg.text.length(),
+    };
+
+    std::array<char, 40> header_arr = encode_header(header);
+    
+    std::string send(header_arr.data());
+    send.append(msg.text);
+    //send.append(msg.timestamp);
+
+    boost::asio::const_buffer header_buf = boost::asio::buffer(header_arr);
+
+    for (auto& mem : ch.members)
+    {
+        auto& user = storage.users.at(mem.user_id);
+
+        // TODO: store ipv4 as a string
+        //endpoints.emplace_back(boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address((char*)user.IPv4), 10000));
+    }
+
+    PierClient::write_several_peers(endpoints, header_buf);
+    
 }
