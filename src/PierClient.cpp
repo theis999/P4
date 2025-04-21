@@ -75,6 +75,23 @@ void PierClient::do_write(const_buffer data)
 			{
 				// Handle error. Maybe try send again.
 			}
+			else
+			{
+				// Receive possible answer from server.
+
+				/*
+				if (expecting_answer)
+				*/
+				{
+					sock.async_receive(buffer(recvbuf), std::bind(&PierClient::handle_read, this, placeholders::error, placeholders::bytes_transferred));
+				}
+
+			}
 		}
 	);
+}
+
+void PierClient::handle_read(const boost::system::error_code& err, size_t bytes_read)
+{
+
 }

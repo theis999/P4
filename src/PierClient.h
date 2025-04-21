@@ -20,7 +20,8 @@ public:
 private:
 	void do_connect(const tcp::endpoint endpoint);
 	void do_write(boost::asio::const_buffer data);
-	
+	void handle_read(const boost::system::error_code& err, size_t bytes_read);
+
 	bool connected = false;
 	tcp::socket sock;
 	io_context& io_;
