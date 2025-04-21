@@ -17,4 +17,5 @@ public:
 	string name; // the display name of the member
 
 	Member(int user_id, int channel_id, string name);
+	string ToFileString();
 };

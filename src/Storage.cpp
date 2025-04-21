@@ -62,16 +62,81 @@ static iMessage::shash string_to_hash(string hexidecimal)
 	return out;
 }
 
+bool Storage::UserNameExists(const std::string& username, const std::string& filepath)
+{
+	std::ifstream in(filepath);
+	if (!in.is_open()) return false;
+
+	std::string line;
+	std::string lowerInput = makeLowercase(username);
+
+	while (std::getline(in, line))
+	{
+		std::istringstream ss(line);
+		std::string idStr, name, guidStr;
+
+		if (std::getline(ss, idStr, ';') && std::getline(ss, name, ';') && std::getline(ss, guidStr))
+		{
+			if (makeLowercase(name) == lowerInput)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool Storage::CreateUser(const User& user, const std::string& filepath)
+{
+	std::fstream file(filepath, std::fstream::out | std::fstream::app | std::fstream::ate);
+	if (!file.is_open()) return false;
+	file << user.ToFileString() << std::endl;
+	file.close();
+	return true;
+}
+
 void Storage::OpenStorage(string filename)
 {
 	//std::filesystem::path cwd = std::filesystem::current_path() / filename;
 	std::ifstream file;
 	file.open(filename);
 	auto is_open = file.is_open();
+
+	channels.clear(); users.clear();
+
 	vector<string> data;
 	while (read_segment(file, data))
 	{
-		channels.push_back({data[0], data[1] == "true"});
+		auto datatype = map_name_to_datatype.find(data[0])->second;
+		switch (datatype)
+		{
+			case d_user:
+			{
+				GUID g;
+				auto status = UuidFromStringA((RPC_CSTR)data[3].c_str(), &g);
+				if (status == RPC_S_OK)
+					users.push_back(User(g, stoi(data[1]), data[2]));
+				else
+					throw "UUID didn't parse for user: " + data[2];
+				break;
+			}
+			case d_membership:
+				channels.at(stoi(data[1])).members.push_back(Member(stoi(data[2]), stoi(data[1]), data[3]));
+				break;
+			case d_channel:
+			{
+				GUID g;
+				auto status = UuidFromStringA((RPC_CSTR)data[3].c_str(), &g);
+				if (status == RPC_S_OK)
+					channels.push_back(Channel(stoi(data[1]), data[2], g));
+				else
+					throw "UUID didn't parse for channel: " + data[2];
+				break;
+			}
+				
+			default:
+				break;
+		}
 	}
 
 	for (auto& ch : channels)
@@ -120,9 +185,27 @@ Channel& Storage::GetCurrentChannel()
 	return channels.at(currentChannelIndex);
 }
 
+void Storage::Save(string filename)
+{
+	std::ofstream file(filename);
+	if (!file.is_open()) return;
+	file << ToFileString();
+	file.close();
+}
+
 string Storage::ToFileString()
 {
-	return string();
+	using std::endl;
+	std::stringstream out;
+	for (User u : users)
+		out << datatype_names[d_user] << ";" << u.ToFileString() << endl;
+	for (Channel c : channels)
+	{
+		out << datatype_names[d_channel] << ";" << c.ToFileString() << endl;
+		for(Member m : c.members)
+			out << datatype_names[d_membership] << ";" << m.ToFileString() << endl;
+	}
+	return out.str();
 }
 
 

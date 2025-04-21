@@ -198,6 +198,7 @@
     <ClInclude Include="iMessage.h" />
     <ClInclude Include="LoginController.h" />
     <ClInclude Include="Main.h" />
+    <ClInclude Include="MainLoginInterface.h" />
     <ClInclude Include="Member.h" />
     <ClInclude Include="STDimport.h" />
     <ClInclude Include="Storage.h" />

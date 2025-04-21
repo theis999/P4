@@ -1,11 +1,32 @@
 #include "Channel.h"
+#include <rpc.h>
+#include <sstream>
 
-Channel::Channel(string name, bool active) : name(name), active(active)
+Channel::Channel(string name) : name(name)
 {
 	channel_id = channel_id_counter++;
+	UuidCreate(&global_id);
+}
+
+Channel::Channel(int id, string name, GUID global_id) :
+	channel_id(id), name(name), global_id(global_id)
+{ }
+
+Member& Channel::GetMemberByUserId(int user_id)
+{
+	for (int i = 0; i < members.size(); i++)
+		if (members[i].user_id == user_id) return members[i];
+	throw "Member not found with id: " + user_id;
 }
 
 string Channel::ToFileString()
 {
-	return string();
+	std::ostringstream ss;
+	RPC_CSTR uuidStr;
+	UuidToStringA(&global_id, &uuidStr);
+
+	ss << channel_id << ";" << name << ";" << uuidStr;
+
+	RpcStringFreeA(&uuidStr);
+	return ss.str();
 }

@@ -5,27 +5,12 @@ static Storage storage;
 
 Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(730, 325), wxDEFAULT_FRAME_STYLE | wxSYSTEM_MENU | wxTAB_TRAVERSAL)
 {
-	storage.OpenStorage("../data.txt"); // expect the file to be located in the project root
-	if (!storage.channels.empty())
-	{
-		ChannelsBox->Clear();
-		for (auto& channel : storage.channels)
-		{
-			ChannelsBox->AppendString(channel.name);
-			channel.members.push_back({Member(0, channel.channel_id, "Test" + channel.name.substr(0, channel.name.size() - 1))});
-		}
-	}
+}
 
-	ChannelsBox->SetSelection(storage.currentChannelIndex);
-	auto item = ChannelsBox->GetStringSelection();
-	ChatLabel->SetLabel(item);
-	SendBtn->Enable(false);
-
-	ChatDisplay->Clear();
-	for (auto& m : storage.GetCurrentChannel().messages)
-	{
-		DisplayMsg(m);
-	}
+void Main::OnAppClose(wxCloseEvent& event)
+{
+	storage.Save("../data.txt");
+	event.Skip();
 }
 
 void Main::OnSendTextChange(wxCommandEvent& event)
@@ -51,8 +36,8 @@ void Main::SendHandler(wxTextCtrl* sendtext)
 {
 	auto text = sendtext->GetValue();
 	sendtext->Clear();
-
-	auto m = iMessage(std::time(nullptr), 0, text.ToStdString());
+	
+	auto m = iMessage(std::time(nullptr), storage.GetCurrentChannel().GetMemberByUserId(currentUser.user_id).member_id, text.ToStdString());
 	storage.GetCurrentChannel().messages.push_back(m);
 	DisplayMsg(m);
 
@@ -72,8 +57,13 @@ void Main::OnChannelsBox(wxCommandEvent& event)
 	{
 		DisplayMsg(m);
 	}
-	SendText->Enable(true);
-	SendBtn->Enable(true);
+	ChannelMembers->Clear();
+	for (auto& m : storage.GetCurrentChannel().members)
+	{
+		ChannelMembers->AppendString(storage.users.at(m.user_id).name);
+	}
+
+	SendBtn->Disable();
 	SendText->SetFocus();
 }
 
@@ -82,4 +72,18 @@ void Main::DisplayMsg(iMessage& m)
 	ChatDisplay->AppendText(m.FormatToPrint(storage.GetCurrentChannel().members[m.member_id].name));
 }
 
+bool Main::Login(User user, std::string password)
+{
+	storage.OpenStorage("../data.txt"); // expect the file to be located in the project root
+	if (storage.channels.empty())
+	{
+	}
 
+	ChannelsBox->SetSelection(storage.currentChannelIndex);
+	auto e = wxCommandEvent();
+	OnChannelsBox(e);
+
+	this->currentUser = user;
+	this->currentPassword = password;
+	return true; // if storage can be opened 
+}
