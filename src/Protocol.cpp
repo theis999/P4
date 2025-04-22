@@ -1,7 +1,10 @@
 #include "Protocol.h"
 #include "Storage.h"
-#include "cstring"
+#include <cstring>
 #include "PierClient.h"
+#include <ctime>;
+
+extern Storage storage;
 
 std::array<char, 40> PierProtocol::encode_header(PierHeader header)
 {
@@ -45,31 +48,46 @@ PierProtocol::PierHeader PierProtocol::decode_header(boost::asio::const_buffer h
 void PierProtocol::SendMSG(Channel ch, iMessage msg)
 {
     std::vector<boost::asio::ip::tcp::endpoint> endpoints;
-
+    
     PierHeader header
     {
         .type = MESSAGE,
         //.sender_GUID = user_guid
-        .channel_GUID = ch.channel_id,
-        .size = msg.text.length(),
+        .channel_GUID = ch.channel_id, // note: this is not actually a GUID
+        .size = 0
     };
 
-    std::array<char, 40> header_arr = encode_header(header);
-    
-    std::string send(header_arr.data());
-    send.append(msg.text);
-    //send.append(msg.timestamp);
+    std::string send;
 
+    std::array<char, sizeof(time_t) + 1> t_arr{};
+
+    // Append timestamp;
+    send.append(reinterpret_cast<const char*>(&(msg.timestamp)), sizeof(iMessage::timestamp));
+    
+    // Append member id
+    send.append(reinterpret_cast<const char*>(&(msg.member_id)), sizeof(iMessage::member_id));
+    
+    // Append hash
+    send.append(reinterpret_cast<const char*>(&(msg.hash)), sizeof(iMessage::hash));
+    
+    // Append chainhash
+    send.append(reinterpret_cast<const char*>(&(msg.chainHash), sizeof(iMessage::chainHash)));
+   
+    // Append text last.
+    send.append(msg.text);
+
+    header.size = send.length();
+    std::array<char, 40> header_arr = encode_header(header);
     boost::asio::const_buffer header_buf = boost::asio::buffer(header_arr);
 
     for (auto& mem : ch.members)
     {
         auto& user = storage.users.at(mem.user_id);
 
-        // TODO: store ipv4 as a string
-        //endpoints.emplace_back(boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address((char*)user.IPv4), 10000));
+        std::string ip_string = std::format("%d.%d.%d.%d", user.IPv4[0], user.IPv4[1], user.IPv4[2], user.IPv4[3]);
+        endpoints.emplace_back(boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address(ip_string), 10000));
     }
 
-    PierClient::write_several_peers(endpoints, header_buf);
+    PierClient::write_several_peers(endpoints, boost::asio::buffer(send));
     
 }

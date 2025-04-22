@@ -32,8 +32,6 @@ struct PierHeader
     uint32_t size;
 };
 
-static Storage storage;
-
 std::array<char, 40> encode_header(PierHeader header);
 PierHeader decode_header(boost::asio::const_buffer header);
 

@@ -1,12 +1,18 @@
 #include "PierListener.h"
+#include "Protocol.h"
+#include "Storage.h"
+#include <boost/bind.hpp>
+
 
 using namespace boost::asio;
 using boost::asio::ip::tcp;
 using boost::asio::io_context;
 
+extern Storage storage;
+
 void tcp_connection::start_receive()
 {
-	sock.async_receive(buffer(recvbuf), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
+	async_read(sock, read_buf.prepare(sizeof(PierProtocol::PierHeader)), transfer_exactly(sizeof(PierProtocol::PierHeader)), boost::bind(&tcp_connection::handle_first_read, this, placeholders::error, placeholders::bytes_transferred));
 }
 
 void tcp_connection::start_write(const_buffer data)
@@ -17,8 +23,44 @@ void tcp_connection::start_write(const_buffer data)
 // TODO: Get the read data out.
 void tcp_connection::handle_first_read(const boost::system::error_code& err, size_t bytes_read)
 {
-	if (!err)
+	if (!err && ( bytes_read == sizeof(PierProtocol::PierHeader) ))
 	{
+		std::string header_string = {buffers_begin(read_buf.data()), buffers_end(read_buf.data())};
+		PierProtocol::PierHeader header = PierProtocol::decode_header(buffer(header_string));
+
+		switch (header.type)
+		{
+			case PierProtocol::MESSAGE:
+			{
+				bool channel_exists = false;
+				// Check if channel exists & if sender is part of channel.
+				for (auto& ch : storage.channels)
+				{
+					// Still no GUID in Channel class
+					// if (ch.channel_id == header.channel_GUID) 
+					// {
+					//	channel_exists = true;
+					//	break;
+					// }
+				}	
+				if (!channel_exists)
+				{
+					sock.close();
+					return;
+				}
+				
+				streambuf msg_buf;
+
+				// Should be changed to async_read later.
+				async_read(sock, msg_buf.prepare(header.size), transfer_exactly(header.size), boost::bind(&tcp_connection::read_msg_handler, this, &msg_buf, placeholders::error, placeholders::bytes_transferred));
+				
+			}
+			default:
+				// Invalid type, close socket.
+				sock.close();
+				break;
+		}
+
 		// Decode header. 
 		// Keep receiving.
 		sock.async_receive(buffer(recvbuf), std::bind(&tcp_connection::handle_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
@@ -51,6 +93,49 @@ void tcp_connection::handle_write(const boost::system::error_code& err, size_t b
 	}
 }
 
+void tcp_connection::read_msg_handler(streambuf& buf, const boost::system::error_code& err, size_t bytes_read)
+{
+	if (!err) 
+	{
+		// Make a string from the streambuf to act as a const buffer.
+		std::string read_string = {buffers_begin(buf.data()), buffers_end(buf.data())};
+		const_buffer reintrp_buf = buffer(read_string);
+		
+		// Make a char pointer to the contents of the buffer.
+		const char* buf_ptr = reinterpret_cast<const char*>(reintrp_buf.data());
+
+		// reinterpret_cast to time_t and increment the pointer by the size of time_t.
+		time_t ts = *(reinterpret_cast<const time_t*>(buf_ptr));
+		buf_ptr += sizeof(time_t);
+
+		// reinterpret_cast to int and increment the pointer by the size of int.
+		int memb_id = *(reinterpret_cast<const int*>(buf_ptr));
+		buf_ptr += sizeof(int);
+
+		// <============================> 
+		iMessage::shash hash = *(reinterpret_cast<const iMessage::shash*>(buf_ptr));
+		buf_ptr += sizeof(iMessage::shash);
+
+		// <============================> 
+		iMessage::shash chainhash = *(reinterpret_cast<const iMessage::shash*>(buf_ptr));
+		buf_ptr += sizeof(iMessage::shash);
+		
+		// Make a new const_buffer from an offset equal to the buf_ptr.
+		const_buffer text_buf = reintrp_buf + sizeof(time_t) + sizeof(int) + 2 * sizeof(iMessage::shash);
+
+		// Make a text string from the new buffer.
+		std::string text(static_cast<const char *>(text_buf.data()), text_buf.size());
+
+		// Construct an iMessage.
+		iMessage msg(ts, memb_id, text, hash, chainhash);
+
+		// Add the iMessage to message storage i guess?
+
+	}
+
+}
+
+
 PierListener::PierListener(io_context& io) : io_(io), acceptor(io, tcp::endpoint(tcp::v4(), default_listening_port))
 {
 	// Start accepting connections.
@@ -73,3 +158,4 @@ void PierListener::handle_accept(tcp_connection::ptr new_conn, const boost::syst
 	// Continue accepting.
 	start_accept();
 }
+

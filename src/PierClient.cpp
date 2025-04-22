@@ -1,4 +1,5 @@
 #include "PierClient.h"
+#include "Protocol.h"
 
 using namespace boost::asio;
 using boost::asio::ip::tcp;
@@ -9,17 +10,17 @@ PierClient::PierClient(io_context& io, tcp::endpoint endpoint) : io_(io), sock(i
 	do_connect(endpoint);
 }
 
-void PierClient::write(const_buffer data)
+void PierClient::write(const_buffer header, const_buffer data)
 {
 	// We sleep the thread and try again if not connected.
 	if (!connected)
 	{
 		// Probably needs other retry-solution. This could pause the program for a pretty long time.
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-		write(data);
+		write(header, data);
 		return;
 	}
-	do_write(data);
+	do_write(header, data);
 
 }
 
@@ -28,7 +29,7 @@ void PierClient::close()
 	sock.close();
 }
 
-void PierClient::write_several_peers(std::vector<tcp::endpoint> endpoints, const_buffer data)
+void PierClient::write_several_peers(std::vector<tcp::endpoint> endpoints, const_buffer header, const_buffer data)
 {
 	io_context io;
 	// Work guard stops io.run() from returning when it has ran out of work.
@@ -41,7 +42,7 @@ void PierClient::write_several_peers(std::vector<tcp::endpoint> endpoints, const
 	for (auto& peer : endpoints)
 	{
 		clients.emplace_back(io, peer);
-		clients.back().write(data);
+		clients.back().write(header, data);
 	}
 	// Allow io.run() to return.
 	wg.reset();
@@ -67,10 +68,10 @@ void PierClient::do_connect(const tcp::endpoint endpoint)
 	);
 }
 
-void PierClient::do_write(const_buffer data)
+void PierClient::do_write(const_buffer header, const_buffer data)
 {
-	sock.async_write_some(data, 
-		[this](boost::system::error_code err, size_t bytes_sent) 
+	sock.async_write_some(header, 
+		[this, data](boost::system::error_code err, size_t bytes_sent) 
 		{
 			if (err)
 			{
@@ -78,13 +79,13 @@ void PierClient::do_write(const_buffer data)
 			}
 			else
 			{
-				// Receive possible answer from server.
-
-				/*
-				if (expecting_answer)
-				*/
+				if (bytes_sent == sizeof(PierProtocol::PierHeader))
 				{
-					sock.async_receive(buffer(recvbuf), std::bind(&PierClient::handle_read, this, placeholders::error, placeholders::bytes_transferred));
+					sock.async_write_some(data, std::bind(&PierClient::handle_data_send, this, placeholders::error, placeholders::bytes_transferred));
+				}
+				else
+				{
+					sock.close();
 				}
 
 			}
@@ -95,4 +96,21 @@ void PierClient::do_write(const_buffer data)
 void PierClient::handle_read(const boost::system::error_code& err, size_t bytes_read)
 {
 
+}
+
+void PierClient::handle_data_send(const boost::system::error_code err, size_t bytes_sent)
+{
+	if (!err)
+	{
+		// Receive possible answer from server.
+
+		/*
+		if (expecting_answer)
+		*/
+		
+		if (false) // TEMPORARY
+		{
+			sock.async_receive(buffer(recvbuf), std::bind(&PierClient::handle_read, this, placeholders::error, placeholders::bytes_transferred));
+		}
+	}
 }
