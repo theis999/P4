@@ -17,7 +17,7 @@ protected:
     static bool RSASign(RSA* rsa, const unsigned char* msg, size_t msgLen, unsigned char** encMsg, size_t* encMsgLen);
     
 public:
-    static bool Signing::oneStepVerifyMessage(const char* publickey, const char* signatureB64, const char* message);
+    static bool oneStepVerifyMessage(const char* publickey, const char* signatureB64, const char* message);
     static std::string signMessage(const std::string& privateKey, const std::string& message);
 
 };
