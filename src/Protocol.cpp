@@ -59,8 +59,6 @@ void PierProtocol::SendMSG(Channel ch, iMessage msg)
 
     std::string send;
 
-    std::array<char, sizeof(time_t) + 1> t_arr{};
-
     // Append timestamp;
     send.append(reinterpret_cast<const char*>(&(msg.timestamp)), sizeof(iMessage::timestamp));
     
