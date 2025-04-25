@@ -10,9 +10,22 @@
 /// </summary>
 class Storage
 {
+	enum datatype
+	{
+		d_user, d_membership, d_channel
+	};
+	static inline const vector<string> datatype_names{
+		"user", "membership", "channel"
+	};
+	static inline const map<string, datatype> map_name_to_datatype{
+		{"user", d_user}, {"membership", d_membership}, {"channel", d_channel}
+	};
+
 public:
 	Storage(){ }
 
+	static bool UserNameExists(const std::string& username, const std::string& filepath);
+	static bool CreateUser(const User& user, const std::string& filepath);
 	void OpenStorage(string filename);
 
 	void AppendMessage(Channel c, iMessage msg);
@@ -23,5 +36,6 @@ public:
 	int currentChannelIndex = 0;
 	Channel& GetCurrentChannel();
 
+	void Save(string filename); //Save the data file of the current user
 	string ToFileString();
 };

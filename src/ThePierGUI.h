@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// C++ code generated with wxFormBuilder (version 4.2.1-66-g57ca7150)
+// C++ code generated with wxFormBuilder (version 4.2.1-16-g4b3fa447)
 // http://www.wxformbuilder.org/
 //
 // PLEASE DO *NOT* EDIT THIS FILE!
@@ -50,18 +50,17 @@ class ThePier : public wxFrame
 		wxButton* SendBtn;
 		wxPanel* ChannelData;
 		wxStaticText* CurrentUserLabel;
+		wxButton* LoginButton;
 		wxStaticLine* m_staticline3;
 		wxListBox* ChannelMembers;
-		wxButton* CreateNewUserButton;
-		wxButton* LoginButton;
 
 		// Virtual event handlers, override them in your derived class
+		virtual void OnAppClose( wxCloseEvent& event ) { event.Skip(); }
 		virtual void OnChannelsBox( wxCommandEvent& event ) { event.Skip(); }
 		virtual void RunTest( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnSendTextChange( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnSendTextEnter( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnSend( wxCommandEvent& event ) { event.Skip(); }
-		virtual void ClickCreateNewUser( wxCommandEvent& event ) { event.Skip(); }
 		virtual void LoginButtonClick( wxCommandEvent& event ) { event.Skip(); }
 
 
@@ -88,15 +87,18 @@ class LoginForm : public wxDialog
 		// Virtual event handlers, override them in your derived class
 		virtual void OnLoginInput( wxCommandEvent& event ) { event.Skip(); }
 		virtual void TryLogin( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnLoginInputPassword( wxCommandEvent& event ) { event.Skip(); }
+		virtual void ClickCreateNewUser( wxCommandEvent& event ) { event.Skip(); }
 
 
 	public:
 		wxTextCtrl* UsernameTextBox;
 		wxTextCtrl* PasswordTextBox;
+		wxButton* CreateNewUserButton;
 		wxButton* LoginButton;
 		wxStaticText* WrongMessageLabel;
 
-		LoginForm( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Login"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 320,150 ), long style = wxDEFAULT_DIALOG_STYLE );
+		LoginForm( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Login"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 320,175 ), long style = wxDEFAULT_DIALOG_STYLE );
 
 		~LoginForm();
 

@@ -2,6 +2,7 @@
 
 #include "STDimport.h"
 
+#include <guiddef.h>
 #include "Member.h"
 #include "iMessage.h"
 
@@ -14,14 +15,17 @@ protected:
 	inline static int channel_id_counter = 0;
 
 public:
-	string name;
-	bool active;
-	int channel_id;
+	int channel_id; // local id of the channel for fast lookup comparing memberships
+	string name; // the display name of the channel
+	GUID global_id; // global id of this channel, used for network
 
-	vector<Member> members;
+	map<int, Member> members;
 	vector<iMessage> messages;
 
-	Channel(string name, bool active = true);
+	Channel(string name); // minimal constructor
+	Channel(int id, string name, GUID global_id); // regular constructor
+
+	Member& GetMemberByUserId(int user_id);
 
 	string ToFileString();
 
@@ -30,7 +34,6 @@ public:
 		bool isFinished;
 		int clientOrigin, peerOrigin;
 	};
-
 
 	// Sync related functions, found in sync.ccp
 	void sync();

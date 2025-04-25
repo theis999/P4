@@ -5,15 +5,18 @@
 #include "iMessage.h"
 #include "LoginController.h"
 #include "Channel.h"
+#include "MainLoginInterface.h"
 
 using std::to_string;
 
-class Main : public ThePier
+class Main : public ThePier, public MainLoginInterface
 {
 	wxString window_title = "The Pier";
 
 public:
 	User currentUser;
+	string currentPassword;
+
 	Main();
 
 	void OnChannelsBox(wxCommandEvent& event);
@@ -26,6 +29,8 @@ public:
 
 	void SendHandler(wxTextCtrl* sendtext);
 
+	bool Login(User user, string password);
+
 	void DoLogin();
 	void ClickCreateNewUser(wxCommandEvent& event);
 	void LoginButtonClick(wxCommandEvent& event);
@@ -34,4 +39,5 @@ public:
 
 	void RunTest(wxCommandEvent& event);
 
+	void OnAppClose(wxCloseEvent& event);
 };

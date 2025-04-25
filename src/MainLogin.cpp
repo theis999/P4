@@ -5,7 +5,7 @@
 bool Main::PromptLogin(std::string& outUsername)
 {
 	LoginForm* loginForm = new LoginForm(this);
-	LoginController controller(loginForm, nullptr);
+	LoginController controller(loginForm, nullptr, this);
 
 	if (loginForm->ShowModal() == wxID_OK)
 	{
