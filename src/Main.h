@@ -6,6 +6,7 @@
 #include "LoginController.h"
 #include "Channel.h"
 #include "MainLoginInterface.h"
+#include "Storage.h"
 
 using std::to_string;
 
@@ -19,6 +20,7 @@ public:
 
 	Main();
 
+	static Storage& GetStorage();
 	void OnChannelsBox(wxCommandEvent& event);
 
 	void DisplayMsg(iMessage& m);

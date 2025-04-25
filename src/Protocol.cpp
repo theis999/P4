@@ -2,9 +2,9 @@
 #include "Storage.h"
 #include <cstring>
 #include "PierClient.h"
-#include <ctime>;
+#include <ctime>
+#include "Main.h"
 
-extern Storage storage;
 
 std::array<char, 40> PierProtocol::encode_header(PierHeader header)
 {
@@ -45,15 +45,15 @@ PierProtocol::PierHeader PierProtocol::decode_header(boost::asio::const_buffer h
     return out;
 }
 
-void PierProtocol::SendMSG(Channel ch, iMessage msg)
+void PierProtocol::SendMSG(Channel ch, iMessage msg, User sender)
 {
     std::vector<boost::asio::ip::tcp::endpoint> endpoints;
     
     PierHeader header
     {
         .type = MESSAGE,
-        //.sender_GUID = user_guid
-        .channel_GUID = ch.channel_id, // note: this is not actually a GUID
+        .sender_GUID = sender.unique_id,
+        .channel_GUID = ch.global_id,
         .size = 0
     };
 
@@ -78,14 +78,21 @@ void PierProtocol::SendMSG(Channel ch, iMessage msg)
     std::array<char, 40> header_arr = encode_header(header);
     boost::asio::const_buffer header_buf = boost::asio::buffer(header_arr);
 
+    Storage storage = Main::GetStorage();
+
     for (auto& mem : ch.members)
     {
-        auto& user = storage.users.at(mem.user_id);
+        auto& user = storage.users.at(mem.second.user_id);
 
-        std::string ip_string = std::format("%d.%d.%d.%d", user.IPv4[0], user.IPv4[1], user.IPv4[2], user.IPv4[3]);
+        std::string ip_string = std::format("%d.%d.%d.%d", 
+            static_cast<uint8_t>(user.IPv4[0]), 
+            static_cast<uint8_t>(user.IPv4[1]), 
+            static_cast<uint8_t>(user.IPv4[2]), 
+            static_cast<uint8_t>(user.IPv4[3])
+            );
         endpoints.emplace_back(boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address(ip_string), 10000));
     }
 
-    PierClient::write_several_peers(endpoints, boost::asio::buffer(send));
+    PierClient::write_several_peers(endpoints, header_buf, boost::asio::buffer(send));
     
 }

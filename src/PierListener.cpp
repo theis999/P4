@@ -2,17 +2,15 @@
 #include "Protocol.h"
 #include "Storage.h"
 #include <boost/bind.hpp>
-
+#include "Main.h"
 
 using namespace boost::asio;
 using boost::asio::ip::tcp;
 using boost::asio::io_context;
 
-extern Storage storage;
-
 void tcp_connection::start_receive()
 {
-	async_read(sock, read_buf.prepare(sizeof(PierProtocol::PierHeader)), transfer_exactly(sizeof(PierProtocol::PierHeader)), boost::bind(&tcp_connection::handle_first_read, this, placeholders::error, placeholders::bytes_transferred));
+	async_read(sock, buffer(recvbuf), transfer_exactly(sizeof(PierProtocol::PierHeader)), std::bind(&tcp_connection::handle_first_read, this, placeholders::error, placeholders::bytes_transferred));
 }
 
 void tcp_connection::start_write(const_buffer data)
@@ -27,6 +25,8 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 	{
 		std::string header_string = {buffers_begin(read_buf.data()), buffers_end(read_buf.data())};
 		PierProtocol::PierHeader header = PierProtocol::decode_header(buffer(header_string));
+
+		Storage storage = Main::GetStorage();
 
 		switch (header.type)
 		{
@@ -49,10 +49,7 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 					return;
 				}
 				
-				streambuf msg_buf;
-
-				// Should be changed to async_read later.
-				async_read(sock, msg_buf.prepare(header.size), transfer_exactly(header.size), boost::bind(&tcp_connection::read_msg_handler, this, &msg_buf, placeholders::error, placeholders::bytes_transferred));
+				async_read(sock, buffer(recvbuf), transfer_exactly(header.size), boost::bind(&tcp_connection::read_msg_handler, this, placeholders::error, placeholders::bytes_transferred));
 				
 			}
 			default:
@@ -93,12 +90,12 @@ void tcp_connection::handle_write(const boost::system::error_code& err, size_t b
 	}
 }
 
-void tcp_connection::read_msg_handler(streambuf& buf, const boost::system::error_code& err, size_t bytes_read)
+void tcp_connection::read_msg_handler(const boost::system::error_code& err, size_t bytes_read)
 {
 	if (!err) 
 	{
 		// Make a string from the streambuf to act as a const buffer.
-		std::string read_string = {buffers_begin(buf.data()), buffers_end(buf.data())};
+		std::string read_string = std::string(recvbuf.data(), bytes_read);
 		const_buffer reintrp_buf = buffer(read_string);
 		
 		// Make a char pointer to the contents of the buffer.

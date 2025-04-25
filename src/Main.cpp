@@ -48,6 +48,11 @@ void Main::SendHandler(wxTextCtrl* sendtext)
 	sendtext->SetFocus();
 }
 
+Storage& Main::GetStorage()
+{
+	return storage;
+}
+
 void Main::OnChannelsBox(wxCommandEvent& event)
 {
 	auto item = ChannelsBox->GetStringSelection();

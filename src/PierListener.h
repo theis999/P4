@@ -35,8 +35,8 @@ private:
 	// Handler function called after write.
 	void handle_write(const boost::system::error_code& err, size_t bytes_sent);
 	
-	void read_msg_handler(boost::asio::streambuf& buf, const boost::system::error_code& err, size_t bytes_read);
-
+	void read_msg_handler(const boost::system::error_code& err, size_t bytes_read);
+	boost::asio::streambuf msg_buf;
 	boost::asio::streambuf read_buf;
 	tcp::socket sock;
 	io_context& io_;
