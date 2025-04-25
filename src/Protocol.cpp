@@ -3,7 +3,7 @@
 #include <cstring>
 #include "PierClient.h"
 #include <ctime>
-#include "Main.h"
+#include "MainReceiveMessageInterface.h"
 
 
 std::array<char, 40> PierProtocol::encode_header(PierHeader header)
@@ -78,7 +78,7 @@ void PierProtocol::SendMSG(Channel ch, iMessage msg, User sender)
     std::array<char, 40> header_arr = encode_header(header);
     boost::asio::const_buffer header_buf = boost::asio::buffer(header_arr);
 
-    Storage storage = Main::GetStorage();
+    Storage storage; // = Main::GetStorage();
 
     for (auto& mem : ch.members)
     {

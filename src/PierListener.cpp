@@ -1,12 +1,9 @@
 #include "PierListener.h"
 #include "Protocol.h"
-#include "Storage.h"
 #include <boost/bind.hpp>
-#include "Main.h"
 
 using namespace boost::asio;
 using boost::asio::ip::tcp;
-using boost::asio::io_context;
 
 void tcp_connection::start_receive()
 {
@@ -23,10 +20,10 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 {
 	if (!err && ( bytes_read == sizeof(PierProtocol::PierHeader) ))
 	{
-		std::string header_string = {buffers_begin(read_buf.data()), buffers_end(read_buf.data())};
+		std::string header_string(recvbuf.data(), sizeof(PierProtocol::PierHeader));
 		PierProtocol::PierHeader header = PierProtocol::decode_header(buffer(header_string));
 
-		Storage storage = Main::GetStorage();
+		Storage storage = mn->GetStorage();
 
 		switch (header.type)
 		{
@@ -36,12 +33,13 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				// Check if channel exists & if sender is part of channel.
 				for (auto& ch : storage.channels)
 				{
-					// Still no GUID in Channel class
-					// if (ch.channel_id == header.channel_GUID) 
-					// {
-					//	channel_exists = true;
-					//	break;
-					// }
+					
+					if (ch.global_id == header.channel_GUID) 
+					{
+						channel_exists = true;
+						this->channel = &ch;
+						break;
+					}
 				}	
 				if (!channel_exists)
 				{
@@ -126,14 +124,18 @@ void tcp_connection::read_msg_handler(const boost::system::error_code& err, size
 		// Construct an iMessage.
 		iMessage msg(ts, memb_id, text, hash, chainhash);
 
-		// Add the iMessage to message storage i guess?
+		mn->ReceiveHandler(this->channel, msg);
 
 	}
 
 }
 
+tcp_connection::tcp_connection(boost::asio::io_context& io, MainReceiveMessageInterface * mn) : io_(io), sock(io), mn(mn)
+{}
 
-PierListener::PierListener(io_context& io) : io_(io), acceptor(io, tcp::endpoint(tcp::v4(), default_listening_port))
+
+
+PierListener::PierListener(boost::asio::io_context& io, MainReceiveMessageInterface * mn) : io_(io), acceptor(io, tcp::endpoint(tcp::v4(), default_listening_port))
 {
 	// Start accepting connections.
 	start_accept();
@@ -141,7 +143,7 @@ PierListener::PierListener(io_context& io) : io_(io), acceptor(io, tcp::endpoint
 
 void PierListener::start_accept()
 {
-	tcp_connection::ptr new_conn = tcp_connection::create(io_);
+	tcp_connection::ptr new_conn = tcp_connection::create(io_, mn);
 	acceptor.async_accept(new_conn->get_socket(), std::bind(&PierListener::handle_accept, this, new_conn, placeholders::error));
 }
 

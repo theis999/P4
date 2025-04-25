@@ -203,6 +203,7 @@
     <ClInclude Include="LoginController.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="MainLoginInterface.h" />
+    <ClInclude Include="MainReceiveMessageInterface.h" />
     <ClInclude Include="Member.h" />
     <ClInclude Include="PierClient.h" />
     <ClInclude Include="PierListener.h" />
