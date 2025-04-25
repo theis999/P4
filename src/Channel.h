@@ -19,7 +19,7 @@ public:
 	string name; // the display name of the channel
 	GUID global_id; // global id of this channel, used for network
 
-	vector<Member> members;
+	map<int, Member> members;
 	vector<iMessage> messages;
 
 	Channel(string name); // minimal constructor

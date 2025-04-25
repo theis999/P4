@@ -104,6 +104,7 @@ void Storage::OpenStorage(string filename)
 
 	channels.clear(); users.clear();
 
+	vector<Member> memberqueue;
 	vector<string> data;
 	while (read_segment(file, data))
 	{
@@ -121,7 +122,7 @@ void Storage::OpenStorage(string filename)
 				break;
 			}
 			case d_membership:
-				channels.at(stoi(data[1])).members.push_back(Member(stoi(data[2]), stoi(data[1]), data[3]));
+				memberqueue.push_back(Member(stoi(data[3]), stoi(data[2]), data[4], stoi(data[1])));
 				break;
 			case d_channel:
 			{
@@ -138,6 +139,17 @@ void Storage::OpenStorage(string filename)
 				break;
 		}
 	}
+
+	std::sort(users.begin(), users.end(), [](User& a, User& b)
+{
+	return a.user_id < b.user_id;
+ });
+	std::sort(channels.begin(), channels.end(), [](Channel& a, Channel& b)
+{
+	return a.channel_id < b.channel_id;
+});
+	for (auto& member : memberqueue)
+		channels.at(member.channel_id).members.insert({member.member_id, member});
 
 	for (auto& ch : channels)
 	{
@@ -187,6 +199,7 @@ Channel& Storage::GetCurrentChannel()
 
 void Storage::Save(string filename)
 {
+	if (channels.empty() || users.empty()) return; // prevent saving nothing
 	std::ofstream file(filename);
 	if (!file.is_open()) return;
 	file << ToFileString();
@@ -202,8 +215,8 @@ string Storage::ToFileString()
 	for (Channel c : channels)
 	{
 		out << datatype_names[d_channel] << ";" << c.ToFileString() << endl;
-		for(Member m : c.members)
-			out << datatype_names[d_membership] << ";" << m.ToFileString() << endl;
+		for(auto m = c.members.begin();  m != c.members.end(); m++)
+			out << datatype_names[d_membership] << ";" << m->second.ToFileString() << endl;
 	}
 	return out.str();
 }

@@ -14,8 +14,9 @@ Channel::Channel(int id, string name, GUID global_id) :
 
 Member& Channel::GetMemberByUserId(int user_id)
 {
-	for (int i = 0; i < members.size(); i++)
-		if (members[i].user_id == user_id) return members[i];
+	for (auto& [id, member] : members)
+		if (member.user_id == user_id)
+			return member;
 	throw "Member not found with id: " + user_id;
 }
 

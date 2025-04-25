@@ -21,7 +21,7 @@ User::User(GUID unique_id, int user_id, string name, std::byte public_key[], std
 	for (auto channel : channels)
 	{
 		Member m = {user_id, channel.channel_id, name};
-		channel.members.push_back(m);
+		channel.members.insert({m.member_id, m});
 		channel_membership cm = {{m.member_id, channel}};
 		memberships.push_back(cm);
 	}

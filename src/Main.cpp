@@ -9,7 +9,8 @@ Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(
 
 void Main::OnAppClose(wxCloseEvent& event)
 {
-	storage.Save("../data.txt");
+	if (currentPassword != "") // prevent attempting save when not logged in
+		storage.Save("../data.txt");
 	event.Skip();
 }
 
@@ -37,7 +38,8 @@ void Main::SendHandler(wxTextCtrl* sendtext)
 	auto text = sendtext->GetValue();
 	sendtext->Clear();
 	
-	auto m = iMessage(std::time(nullptr), storage.GetCurrentChannel().GetMemberByUserId(currentUser.user_id).member_id, text.ToStdString());
+	auto& member = storage.GetCurrentChannel().GetMemberByUserId(currentUser.user_id);
+	auto m = iMessage(std::time(nullptr), member.member_id, text.ToStdString());
 	storage.GetCurrentChannel().messages.push_back(m);
 	DisplayMsg(m);
 
@@ -58,18 +60,19 @@ void Main::OnChannelsBox(wxCommandEvent& event)
 		DisplayMsg(m);
 	}
 	ChannelMembers->Clear();
-	for (auto& m : storage.GetCurrentChannel().members)
+	for (auto& [index, member] : storage.GetCurrentChannel().members)
 	{
-		ChannelMembers->AppendString(storage.users.at(m.user_id).name);
+		ChannelMembers->AppendString(storage.users.at(member.user_id).name);
 	}
 
 	SendBtn->Disable();
 	SendText->SetFocus();
 }
 
-void Main::DisplayMsg(iMessage& m)
+void Main::DisplayMsg(iMessage& msg)
 {
-	ChatDisplay->AppendText(m.FormatToPrint(storage.GetCurrentChannel().members[m.member_id].name));
+	auto& member = storage.GetCurrentChannel().GetMemberByUserId(msg.member_id);
+	ChatDisplay->AppendText(msg.FormatToPrint(member.name));
 }
 
 bool Main::Login(User user, std::string password)
@@ -77,8 +80,12 @@ bool Main::Login(User user, std::string password)
 	storage.OpenStorage("../data.txt"); // expect the file to be located in the project root
 	if (storage.channels.empty())
 	{
+		throw "Not implemented: storage failed to unlock the channels data due to password verification failure.";
 	}
 
+	ChannelsBox->Clear();
+	for (auto& c : storage.channels)
+		ChannelsBox->Append(c.name);
 	ChannelsBox->SetSelection(storage.currentChannelIndex);
 	auto e = wxCommandEvent();
 	OnChannelsBox(e);
