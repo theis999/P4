@@ -3,7 +3,6 @@
 
 #include "STDimport.h"
 #include <guiddef.h>
-#include <rpc.h>
 
 #include "Member.h"
 #include "Channel.h"
@@ -38,12 +37,7 @@ public:
 	string ToFileString() const;
 	void SaveToFile(const std::string& filepath) const;
 
-	static inline User CreateUser(string _name)
-	{
-		UUID g;
-		auto a = UuidCreate(&g);
-		return User(g, 0, _name);
-	}
+	static User CreateUser(string _name);
 
 	static std::optional<User> LoadUserByName(const std::string& username, const std::string& filepath);
 };

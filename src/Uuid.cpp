@@ -1,12 +1,13 @@
 #include "Uuid.h"
 #include <rpc.h>
 
-void GuidFromString(const string& s)
+GUID GuidFromString(const string& s)
 {
 	GUID g;
 	auto status = UuidFromStringA((RPC_CSTR)s.c_str(), &g);
 	if (status != RPC_S_OK)
 		throw "UUID didn't parse for string: " + s;
+	return g;
 }
 
 void GuidToString(GUID g, string& out)
@@ -15,7 +16,7 @@ void GuidToString(GUID g, string& out)
 	auto status = UuidToStringA(&g, &uuidStr);
 	if (status != RPC_S_OK) throw "Error creating string from GUID";
 	
-	out = *uuidStr;
+	out = (char*)uuidStr;
 
 	RpcStringFreeA(&uuidStr);
 }

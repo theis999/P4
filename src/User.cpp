@@ -2,6 +2,7 @@
 #include <sstream>
 #include <fstream>
 #include <algorithm>
+#include "Uuid.h"
 
 typedef GUID UUID;
 
@@ -30,12 +31,7 @@ User::User(GUID unique_id, int user_id, string name, std::byte public_key[], std
 string User::ToFileString() const
 {
 	std::ostringstream ss;
-	RPC_CSTR uuidStr;
-	UuidToStringA(&unique_id, &uuidStr);
-
-	ss << user_id << ";" << name << ";" << uuidStr;
-
-	RpcStringFreeA(&uuidStr);
+	ss << user_id << ";" << name << ";" << GuidToString(unique_id);
 	return ss.str();
 }
 
@@ -47,6 +43,11 @@ void User::SaveToFile(const std::string& filepath) const
 		out << ToFileString() << std::endl;
 		out.close();
 	}
+}
+
+User User::CreateUser(string _name)
+{
+	return User(GuidCreate(), 0, _name);
 }
 
 std::optional<User> User::LoadUserByName(const std::string& username, const std::string& filepath)
@@ -67,9 +68,7 @@ std::optional<User> User::LoadUserByName(const std::string& username, const std:
 			if (makeLowercase(name) == lowerInput)
 			{
 				int id = std::stoi(idStr);
-				GUID g;
-				UuidFromStringA((RPC_CSTR)guidStr.c_str(), &g);
-				return User(g, id, name);
+				return User(GuidFromString(guidStr), id, name);
 			}
 		}
 	}

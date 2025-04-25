@@ -5,7 +5,7 @@
 using std::string;
 typedef GUID UUID;
 
-void GuidFromString(const string& s);
+GUID GuidFromString(const string& s);
 void GuidToString(GUID g, string& out);
 string GuidToString(GUID g);
 GUID GuidCreate();

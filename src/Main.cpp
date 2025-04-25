@@ -71,7 +71,7 @@ void Main::OnChannelsBox(wxCommandEvent& event)
 
 void Main::DisplayMsg(iMessage& msg)
 {
-	auto& member = storage.GetCurrentChannel().GetMemberByUserId(msg.member_id);
+	auto& member = storage.GetCurrentChannel().members.find(msg.member_id)->second;
 	ChatDisplay->AppendText(msg.FormatToPrint(member.name));
 }
 

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "Uuid.h"
 #include "Storage.h"
 
 static bool read_segment(std::ifstream& file, vector<string>& data)
@@ -112,29 +113,17 @@ void Storage::OpenStorage(string filename)
 		switch (datatype)
 		{
 			case d_user:
-			{
-				GUID g;
-				auto status = UuidFromStringA((RPC_CSTR)data[3].c_str(), &g);
-				if (status == RPC_S_OK)
-					users.push_back(User(g, stoi(data[1]), data[2]));
-				else
-					throw "UUID didn't parse for user: " + data[2];
+				users.push_back(User(GuidFromString(data[3]), stoi(data[1]), data[2]));
 				break;
-			}
+
 			case d_membership:
 				memberqueue.push_back(Member(stoi(data[3]), stoi(data[2]), data[4], stoi(data[1])));
 				break;
+
 			case d_channel:
-			{
-				GUID g;
-				auto status = UuidFromStringA((RPC_CSTR)data[3].c_str(), &g);
-				if (status == RPC_S_OK)
-					channels.push_back(Channel(stoi(data[1]), data[2], g));
-				else
-					throw "UUID didn't parse for channel: " + data[2];
+				channels.push_back(Channel(stoi(data[1]), data[2], GuidFromString(data[3])));
 				break;
-			}
-				
+
 			default:
 				break;
 		}
