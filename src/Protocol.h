@@ -3,6 +3,9 @@
 #include "Channel.h"
 #include "iMessage.h"
 #include "Storage.h"
+#include "PierListener.h"
+#include "MainReceiveMessageInterface.h"
+
 
 #include <boost/asio.hpp>
 
@@ -34,6 +37,14 @@ struct PierHeader
 
 std::array<char, 40> encode_header(PierHeader header);
 PierHeader decode_header(boost::asio::const_buffer header);
+
+class ProtocolHandler
+{
+    
+private:
+    PierListener lstn;
+    MainReceiveMessageInterface* mn;
+};
 
 void SendMSG(Channel ch, iMessage msg, User sender);
 void SendMSGRequest(Channel ch, Member memb, iMessage::shash hash, User sender);

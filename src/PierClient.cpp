@@ -95,7 +95,7 @@ void PierClient::do_write(const_buffer header, const_buffer data)
 
 void PierClient::handle_read(const boost::system::error_code& err, size_t bytes_read)
 {
-
+	// Switch-case with different options for returns from peer.
 }
 
 void PierClient::handle_data_send(const boost::system::error_code err, size_t bytes_sent)
@@ -110,7 +110,7 @@ void PierClient::handle_data_send(const boost::system::error_code err, size_t by
 		
 		if (false) // TEMPORARY
 		{
-			sock.async_receive(buffer(recvbuf), std::bind(&PierClient::handle_read, this, placeholders::error, placeholders::bytes_transferred));
+			async_read(sock, buffer(recvbuf), std::bind(&PierClient::handle_read, this, placeholders::error, placeholders::bytes_transferred));
 		}
 	}
 }

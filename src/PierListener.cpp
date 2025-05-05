@@ -58,12 +58,12 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 
 		// Decode header. 
 		// Keep receiving.
-		sock.async_receive(buffer(recvbuf), std::bind(&tcp_connection::handle_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
+		//sock.async_receive(buffer(recvbuf), std::bind(&tcp_connection::handle_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
 	}
 	else
 	{
 		// Should maybe just close socket here.
-		sock.async_receive(buffer(recvbuf), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));	
+		async_read(sock, buffer(recvbuf), transfer_exactly(sizeof(PierProtocol::PierHeader)), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
 	}
 }
 
