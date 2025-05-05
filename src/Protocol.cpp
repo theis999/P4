@@ -45,10 +45,10 @@ PierProtocol::PierHeader PierProtocol::decode_header(boost::asio::const_buffer h
     return out;
 }
 
-void PierProtocol::SendMSG(Channel ch, iMessage msg, User sender)
+void PierProtocol::SendMSG(Channel ch, iMessage msg, User sender, Storage &storage)
 {
     std::vector<boost::asio::ip::tcp::endpoint> endpoints;
-    
+
     PierHeader header
     {
         .type = MESSAGE,
@@ -77,8 +77,6 @@ void PierProtocol::SendMSG(Channel ch, iMessage msg, User sender)
     header.size = send.length();
     std::array<char, 40> header_arr = encode_header(header);
     boost::asio::const_buffer header_buf = boost::asio::buffer(header_arr);
-
-    Storage storage; // = Main::GetStorage();
 
     for (auto& mem : ch.members)
     {

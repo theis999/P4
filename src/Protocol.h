@@ -46,7 +46,7 @@ private:
     MainReceiveMessageInterface* mn;
 };
 
-void SendMSG(Channel ch, iMessage msg, User sender);
+void SendMSG(Channel ch, iMessage msg, User sender, Storage &storage);
 void SendMSGRequest(Channel ch, Member memb, iMessage::shash hash, User sender);
 void SendMSGMulti(Channel ch, Member memb, std::vector<iMessage> msgs, User sender);
 void SendSyncProbe(Channel ch, iMessage::shash hash, User sender);
