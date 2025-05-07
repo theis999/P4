@@ -1,5 +1,6 @@
 #include "Main.h"
 #include "Storage.h"
+#include <wx/valtext.h>
 
 static Storage storage;
 

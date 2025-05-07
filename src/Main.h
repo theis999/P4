@@ -6,10 +6,8 @@
 #include "LoginController.h"
 #include "Channel.h"
 #include "MainLoginInterface.h"
-#include <wx/valtext.h>
 #include "MainReceiveMessageInterface.h"
 #include "Storage.h"
-
 
 using std::to_string;
 
