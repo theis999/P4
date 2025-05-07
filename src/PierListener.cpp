@@ -7,7 +7,7 @@ using boost::asio::ip::tcp;
 
 void tcp_connection::start_receive()
 {
-	async_read(sock, buffer(recvbuf), transfer_exactly(sizeof(PierProtocol::PierHeader)), std::bind(&tcp_connection::handle_first_read, this, placeholders::error, placeholders::bytes_transferred));
+	async_read(sock, buffer(recvbuf), transfer_exactly(sizeof(PierProtocol::PierHeader)), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
 }
 
 void tcp_connection::start_write(const_buffer data)
