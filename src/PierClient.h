@@ -5,6 +5,13 @@
 using boost::asio::ip::tcp;
 using boost::asio::io_context;
 
+enum ClientFlags : uint8_t
+{
+	NO_ANSWER_EXPECTED		= 0b00000000,
+	EXPECTING_SYNC_ANSWER	= 0b00000001,
+	EXPECTING_SHASH_ANSWER	= 0b00000010
+};
+
 class PierClient
 {
 public:
@@ -27,4 +34,6 @@ private:
 	tcp::socket sock;
 	io_context& io_;
 	std::array<char, 1024> recvbuf;
+	
+	ClientFlags flags{};
 };
