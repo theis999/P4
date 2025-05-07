@@ -19,11 +19,13 @@
     <ClCompile Include="Member.cpp" />
     <ClCompile Include="iMessage.cpp" />
     <ClCompile Include="User.cpp" />
-    <ClCompile Include="Message.cpp" />
-    <ClCompile Include="MessageLogger.cpp" />
     <ClCompile Include="MainTest.cpp" />
     <ClCompile Include="sync.cpp" />
     <ClCompile Include="LoginController.cpp" />
+    <ClCompile Include="MainLogin.cpp" />
+    <ClCompile Include="PierClient.cpp" />
+    <ClCompile Include="PierListener.cpp" />
+    <ClCompile Include="Protocol.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ThePierGUI.h">
@@ -31,7 +33,6 @@
     </ClInclude>
     <ClInclude Include="Main.h" />
     <ClInclude Include="cApp.h" />
-    <ClInclude Include="Message.h" />
     <ClInclude Include="Channel.h" />
     <ClInclude Include="Storage.h" />
     <ClInclude Include="Member.h" />
@@ -39,7 +40,12 @@
     <ClInclude Include="STDimport.h" />
     <ClInclude Include="User.h" />
     <ClInclude Include="LoginController.h" />
-    <ClInclude Include="MessageLogger.h" />
-    <ClInclude Include="sync.h" />
+    <ClInclude Include="PierClient.h" />
+    <ClInclude Include="PierListener.h" />
+    <ClInclude Include="Protocol.h" />
+    <ClInclude Include="MainLoginInterface.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="boat.ico" />
   </ItemGroup>
 </Project>

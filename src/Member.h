@@ -16,5 +16,8 @@ public:
 	int channel_id; // link to the members channel
 	string name; // the display name of the member
 
+	Member() = default;
 	Member(int user_id, int channel_id, string name);
+	Member(int user_id, int channel_id, string name, int _member_id);
+	string ToFileString();
 };
