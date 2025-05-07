@@ -2,11 +2,12 @@
 #include "MainReceiveMessageInterface.h"
 #include <boost/asio.hpp>
 #include <memory>
+#include "Channel.h"
 
 using boost::asio::ip::tcp;
 using boost::asio::io_context;
 
-class tcp_connection : std::enable_shared_from_this<tcp_connection>
+class tcp_connection : public std::enable_shared_from_this<tcp_connection>
 {
 
 public:
@@ -36,7 +37,7 @@ private:
 	// Handler function called after write.
 	void handle_write(const boost::system::error_code& err, size_t bytes_sent);
 	
-	void read_msg_handler(const boost::system::error_code& err, size_t bytes_read);
+	void read_msg_handler(const boost::system::error_code& err, size_t bytes_read, Channel *ch);
 	
 	Channel *channel;
 	MainReceiveMessageInterface* mn = nullptr;
