@@ -48,6 +48,11 @@ void Main::SendHandler(wxTextCtrl* sendtext)
 	sendtext->SetFocus();
 }
 
+Storage& Main::GetStorage()
+{
+	return storage;
+}
+
 void Main::OnChannelsBox(wxCommandEvent& event)
 {
 	auto item = ChannelsBox->GetStringSelection();
@@ -93,4 +98,11 @@ bool Main::Login(User user, std::string password)
 	this->currentUser = user;
 	this->currentPassword = password;
 	return true; // if storage can be opened 
+}
+
+void Main::ReceiveHandler(Channel *ch, iMessage msg)
+{
+	storage.AppendMessage(*ch, msg);
+	if (ch->channel_id != storage.GetCurrentChannel().channel_id) return;
+	DisplayMsg(msg);
 }

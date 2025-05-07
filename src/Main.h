@@ -6,10 +6,12 @@
 #include "LoginController.h"
 #include "Channel.h"
 #include "MainLoginInterface.h"
+#include "MainReceiveMessageInterface.h"
+#include "Storage.h"
 
 using std::to_string;
 
-class Main : public ThePier, public MainLoginInterface
+class Main : public ThePier, public MainLoginInterface, public MainReceiveMessageInterface
 {
 	wxString window_title = "The Pier";
 
@@ -19,6 +21,7 @@ public:
 
 	Main();
 
+	Storage& GetStorage();
 	void OnChannelsBox(wxCommandEvent& event);
 
 	void DisplayMsg(iMessage& m);
@@ -30,6 +33,8 @@ public:
 	void SendHandler(wxTextCtrl* sendtext);
 
 	bool Login(User user, string password);
+
+	void ReceiveHandler(Channel *ch, iMessage msg);
 
 	void DoLogin();
 	void ClickCreateNewUser(wxCommandEvent& event);
