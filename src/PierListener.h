@@ -37,7 +37,7 @@ private:
 	// Handler function called after write.
 	void handle_write(const boost::system::error_code& err, size_t bytes_sent);
 	
-	void read_msg_handler(const boost::system::error_code& err, size_t bytes_read, Channel *ch);
+	void read_msg_handler(const boost::system::error_code& err, size_t bytes_read);
 	
 	Channel *channel;
 	MainReceiveMessageInterface* mn = nullptr;
