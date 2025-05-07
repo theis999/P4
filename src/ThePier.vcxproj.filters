@@ -23,6 +23,9 @@
     <ClCompile Include="sync.cpp" />
     <ClCompile Include="LoginController.cpp" />
     <ClCompile Include="MainLogin.cpp" />
+    <ClCompile Include="PierClient.cpp" />
+    <ClCompile Include="PierListener.cpp" />
+    <ClCompile Include="Protocol.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ThePierGUI.h">
@@ -37,6 +40,9 @@
     <ClInclude Include="STDimport.h" />
     <ClInclude Include="User.h" />
     <ClInclude Include="LoginController.h" />
+    <ClInclude Include="PierClient.h" />
+    <ClInclude Include="PierListener.h" />
+    <ClInclude Include="Protocol.h" />
     <ClInclude Include="MainLoginInterface.h" />
   </ItemGroup>
   <ItemGroup>
