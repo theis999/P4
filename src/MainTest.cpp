@@ -3,13 +3,15 @@
 #include "Channel.h"
 #include "Storage.h"
 #include "Tests.h"
+#include <thread>
 
 static Storage testStorage;
 Storage peerTestStorage;
 
 void Main::RunTest(wxCommandEvent& event)
 {
-	RunNetworkTest(this);
+	std::thread t([&]{RunNetworkTest(this);});
+	t.detach();
 
 	// test code
 	/*
