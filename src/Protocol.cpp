@@ -69,7 +69,7 @@ void PierProtocol::SendMSG(Channel ch, iMessage msg, User sender, Storage &stora
     send.append(reinterpret_cast<const char*>(&(msg.hash)), sizeof(iMessage::hash));
     
     // Append chainhash
-    send.append(reinterpret_cast<const char*>(&(msg.chainHash), sizeof(iMessage::chainHash)));
+    send.append(reinterpret_cast<const char*>(&(msg.chainHash)), sizeof(iMessage::chainHash));
    
     // Append text last.
     send.append(msg.text);
@@ -88,9 +88,10 @@ void PierProtocol::SendMSG(Channel ch, iMessage msg, User sender, Storage &stora
             static_cast<uint8_t>(user.IPv4[2]), 
             static_cast<uint8_t>(user.IPv4[3])
             );
-        endpoints.emplace_back(boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address(ip_string), 10000));
+        endpoints.emplace_back(boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address("100.121.188.116"), 10000));
     }
 
     PierClient::write_several_peers(endpoints, header_buf, boost::asio::buffer(send));
     
+  
 }
