@@ -130,14 +130,17 @@ void tcp_connection::read_msg_handler(const boost::system::error_code& err, size
 
 }
 
-tcp_connection::tcp_connection(boost::asio::io_context& io, MainReceiveMessageInterface * mn) : io_(io), sock(io), mn(mn)
-{}
+tcp_connection::tcp_connection(boost::asio::io_context& io, MainReceiveMessageInterface * _mn) : io_(io), sock(io)
+{
+	this->mn = _mn;
+}
 
 
 
-PierListener::PierListener(boost::asio::io_context& io, MainReceiveMessageInterface * mn) : io_(io), acceptor(io, tcp::endpoint(tcp::v4(), default_listening_port))
+PierListener::PierListener(boost::asio::io_context& io, MainReceiveMessageInterface * _mn) : io_(io), acceptor(io, tcp::endpoint(tcp::v4(), default_listening_port))
 {
 	// Start accepting connections.
+	this->mn = _mn;
 	start_accept();
 }
 
