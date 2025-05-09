@@ -64,20 +64,28 @@ void PierProtocol::SendMSG(Channel ch, iMessage msg, User sender, Storage &stora
     std::string send;
 
     // Append timestamp;
-    send.append(reinterpret_cast<const char*>(&(msg.timestamp)), sizeof(iMessage::timestamp));
-    
+    send.append(std::format("{};", msg.timestamp));
     // Append member id
-    send.append(reinterpret_cast<const char*>(&(msg.member_id)), sizeof(iMessage::member_id));
-    
+    send.append(std::format("{};", msg.member_id)); // NEEDS TO BE A GUID
     // Append hash
-    send.append(reinterpret_cast<const char*>(&(msg.hash)), sizeof(iMessage::hash));
-    
+    send.append(std::format("{};", *(reinterpret_cast<uint32_t*>(msg.hash.data()) )));
     // Append chainhash
-    send.append(reinterpret_cast<const char*>(&(msg.chainHash)), sizeof(iMessage::chainHash));
-   
+    send.append(std::format("{};", *(reinterpret_cast<uint32_t*>(msg.chainHash.data()))));
     // Append text last.
     send.append(msg.text);
 
+    /* THESE ARE THE OLD NON-PLAINTEXT VERSIONS OF THE APPENDS */
+    /*
+    send.append(reinterpret_cast<const char*>(&(msg.timestamp)), sizeof(iMessage::timestamp));
+    
+    send.append(reinterpret_cast<const char*>(&(msg.member_id)), sizeof(iMessage::member_id));
+    
+    send.append(reinterpret_cast<const char*>(&(msg.hash)), sizeof(iMessage::hash));
+    
+    send.append(reinterpret_cast<const char*>(&(msg.chainHash)), sizeof(iMessage::chainHash));
+   
+    */
+    
     header.size = send.length();
 
     std::string out = header.to_string();
@@ -87,7 +95,7 @@ void PierProtocol::SendMSG(Channel ch, iMessage msg, User sender, Storage &stora
     {
         auto& user = storage.users.at(mem.second.user_id);
 
-        std::string ip_string = std::format("%d.%d.%d.%d", 
+        std::string ip_string = std::format("{}.{}.{}.{}", 
             static_cast<uint8_t>(user.IPv4[0]), 
             static_cast<uint8_t>(user.IPv4[1]), 
             static_cast<uint8_t>(user.IPv4[2]), 
@@ -105,12 +113,12 @@ std::string PierProtocol::PierHeader::to_string()
 {
     std::string out{};
 
-    out.append(std::format("%d;", static_cast<uint64_t>(type)));
+    out.append(std::format("{};", static_cast<uint64_t>(type)));
     out.append(GuidToString(sender_GUID));
     out.append(";");
     out.append(GuidToString(channel_GUID));
     out.append(";");
-    out.append(std::format("%d;", size));
+    out.append(std::format("{};", size));
 
     return out;
 }
