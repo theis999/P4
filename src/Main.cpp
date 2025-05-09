@@ -62,6 +62,11 @@ Storage& Main::GetStorage()
 	return storage;
 }
 
+User& Main::GetCurrentUser()
+{
+	return currentUser;
+}
+
 void Main::OnChannelsBox(wxCommandEvent& event)
 {
 	auto item = ChannelsBox->GetStringSelection();
