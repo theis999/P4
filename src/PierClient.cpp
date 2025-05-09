@@ -10,17 +10,17 @@ PierClient::PierClient(io_context& io, tcp::endpoint endpoint) : io_(io), sock(i
 	do_connect(endpoint);
 }
 
-void PierClient::write(const_buffer header, const_buffer data)
+void PierClient::write(const_buffer data)
 {
 	// We sleep the thread and try again if not connected.
 	if (!connected)
 	{
 		// Probably needs other retry-solution. This could pause the program for a pretty long time.
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-		write(header, data);
+		write(data);
 		return;
 	}
-	do_write(header, data);
+	do_write(data);
 
 }
 
@@ -29,7 +29,7 @@ void PierClient::close()
 	sock.close();
 }
 
-void PierClient::write_several_peers(std::vector<tcp::endpoint> endpoints, const_buffer header, const_buffer data)
+void PierClient::write_several_peers(std::vector<tcp::endpoint> endpoints, const_buffer data)
 {
 	io_context io;
 	// Work guard stops io.run() from returning when it has ran out of work.
@@ -42,7 +42,7 @@ void PierClient::write_several_peers(std::vector<tcp::endpoint> endpoints, const
 	for (auto& peer : endpoints)
 	{
 		clients.emplace_back(io, peer);
-		clients.back().write(header, data);
+		clients.back().write(data);
 	}
 	// Allow io.run() to return.
 	wg.reset();
@@ -68,29 +68,10 @@ void PierClient::do_connect(const tcp::endpoint endpoint)
 	);
 }
 
-void PierClient::do_write(const_buffer header, const_buffer data)
+void PierClient::do_write(const_buffer data)
 {
-	sock.async_write_some(header, 
-		[this, data](boost::system::error_code err, size_t bytes_sent) 
-		{
-			if (err)
-			{
-				// Handle error. Maybe try send again.
-			}
-			else
-			{
-				if (bytes_sent == sizeof(PierProtocol::PierHeader))
-				{
-					sock.async_write_some(data, std::bind(&PierClient::handle_data_send, this, placeholders::error, placeholders::bytes_transferred));
-				}
-				else
-				{
-					sock.close();
-				}
 
-			}
-		}
-	);
+	async_write(sock, data, std::bind(&PierClient::handle_data_send, this, placeholders::error, placeholders::bytes_transferred));
 }
 
 void PierClient::handle_read(const boost::system::error_code& err, size_t bytes_read)
