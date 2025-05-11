@@ -6,6 +6,7 @@
 static Storage testStorage;
 Storage peerTestStorage;
 
+/*
 void Main::RunTest(wxCommandEvent& event)
 {
 	// test code
@@ -40,4 +41,4 @@ void Main::RunTest(wxCommandEvent& event)
 	testStorage.GetCurrentChannel().sync();
 
 }
-
+*/

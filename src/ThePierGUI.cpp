@@ -132,7 +132,7 @@ ThePier::ThePier( wxWindow* parent, wxWindowID id, const wxString& title, const 
 	// Connect Events
 	this->Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( ThePier::OnAppClose ) );
 	ChannelsBox->Connect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( ThePier::OnChannelsBox ), NULL, this );
-	test_button->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ThePier::RunTest ), NULL, this );
+	//test_button->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ThePier::RunTest ), NULL, this );
 	SendText->Connect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( ThePier::OnSendTextChange ), NULL, this );
 	SendText->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( ThePier::OnSendTextEnter ), NULL, this );
 	SendBtn->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ThePier::OnSend ), NULL, this );
@@ -144,7 +144,7 @@ ThePier::~ThePier()
 	// Disconnect Events
 	this->Disconnect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( ThePier::OnAppClose ) );
 	ChannelsBox->Disconnect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( ThePier::OnChannelsBox ), NULL, this );
-	test_button->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ThePier::RunTest ), NULL, this );
+	//test_button->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ThePier::RunTest ), NULL, this );
 	SendText->Disconnect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( ThePier::OnSendTextChange ), NULL, this );
 	SendText->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( ThePier::OnSendTextEnter ), NULL, this );
 	SendBtn->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ThePier::OnSend ), NULL, this );

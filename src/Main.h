@@ -6,6 +6,7 @@
 #include "LoginController.h"
 #include "Channel.h"
 #include "MainLoginInterface.h"
+#include <sstream>
 
 using std::to_string;
 
@@ -16,6 +17,10 @@ class Main : public ThePier, public MainLoginInterface
 public:
 	User currentUser;
 	string currentPassword;
+
+	std::vector<unsigned char> key;
+	std::stringstream encryptPath;
+	std::stringstream encryptPathData;
 
 	Main();
 
@@ -37,7 +42,7 @@ public:
 	void UpdateLoginButtonLabel();
 	bool PromptLogin(std::string& outUsername);
 
-	void RunTest(wxCommandEvent& event);
+	//void RunTest(wxCommandEvent& event);
 
 	void OnAppClose(wxCloseEvent& event);
 };

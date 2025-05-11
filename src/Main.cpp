@@ -1,5 +1,7 @@
 #include "Main.h"
 #include "Storage.h"
+#include "FileEncrypt.h"
+#include <filesystem>
 
 static Storage storage;
 
@@ -11,7 +13,16 @@ void Main::OnAppClose(wxCloseEvent& event)
 {
 	if (currentPassword != "") // prevent attempting save when not logged in
 		storage.Save("../data.txt");
-	event.Skip();
+
+	//Block for creating encrypted channel data file for each user
+	encryptPathData.str(""); // clear existing content, just in case
+	encryptPathData << "../data_" << currentUser.name << ".txt";
+	if (!EncryptFiles(key.data(), "../data.txt", encryptPathData.str()))
+	{
+		wxMessageBox("Failed to encrypt and save user data on shutdown.", "File Error", wxOK | wxICON_ERROR);
+	}
+
+	event.Skip();	
 }
 
 void Main::OnSendTextChange(wxCommandEvent& event)
@@ -43,7 +54,7 @@ void Main::SendHandler(wxTextCtrl* sendtext)
 	storage.GetCurrentChannel().messages.push_back(m);
 	DisplayMsg(m);
 
-	storage.AppendMessage(storage.GetCurrentChannel(), m);
+	storage.AppendMessage(storage.GetCurrentChannel(), m, currentUser);
 
 	sendtext->SetFocus();
 }
@@ -77,7 +88,14 @@ void Main::DisplayMsg(iMessage& msg)
 
 bool Main::Login(User user, std::string password)
 {
-	storage.OpenStorage("../data.txt"); // expect the file to be located in the project root
+
+	this->currentUser = user;
+	this->currentPassword = password;
+
+	key.clear();
+	key = MakeKeyFromPassword(currentUser.name + currentPassword);
+
+	storage.OpenStorage("../data.txt", key, currentUser); // expect the file to be located in the project root
 	if (storage.channels.empty())
 	{
 		throw "Not implemented: storage failed to unlock the channels data due to password verification failure.";
@@ -90,7 +108,5 @@ bool Main::Login(User user, std::string password)
 	auto e = wxCommandEvent();
 	OnChannelsBox(e);
 
-	this->currentUser = user;
-	this->currentPassword = password;
 	return true; // if storage can be opened 
 }

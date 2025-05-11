@@ -4,12 +4,11 @@
 #include <sstream>
 #include <filesystem>
 #include <iostream>
-#include <fstream>
-
+#include "FileEncrypt.h"
 #include "Uuid.h"
 #include "Storage.h"
 
-static bool read_segment(std::ifstream& file, vector<string>& data)
+static bool read_segment(std::istream& file, vector<string>& data)
 {
 	string line;
 	string segment;
@@ -96,8 +95,9 @@ bool Storage::CreateUser(const User& user, const std::string& filepath)
 	return true;
 }
 
-void Storage::OpenStorage(string filename)
+void Storage::OpenStorage(string filename, std::vector<unsigned char> key, User currentUser)
 {
+	this->key = key;
 	//std::filesystem::path cwd = std::filesystem::current_path() / filename;
 	std::ifstream file;
 	file.open(filename);
@@ -142,44 +142,56 @@ void Storage::OpenStorage(string filename)
 
 	for (auto& ch : channels)
 	{
-		string filePath = "chat_history/" + ch.name + "messagedata.txt";
-		std::ifstream file(filePath);
+		string encFilePath = "chat_history/" + currentUser.name + "_" + ch.name + "messagedataEnc.bin";
 
-		if (!file) return;
-
-		while (read_segment(file, data) && data.size() > 1)
+		std::vector<std::string> decryptedMessages;
+		if (!DecryptAllMessagesGCM(key, encFilePath, decryptedMessages))
 		{
-			auto a = std::stoi(data[0]);
-			ch.messages.push_back(iMessage(std::stoi(data[0]), std::stoi(data[1]), data[2], string_to_hash(data[3])));
+			HandleOpenSSLErrors();
+			continue; // skip this channel if decryption fails
 		}
+
+		for (const std::string& line : decryptedMessages)
+		{
+			std::stringstream ss(line);
+			std::vector<std::string> data;
+			std::string segment;
+			while (std::getline(ss, segment, ';'))
+			{
+				data.push_back(segment);
+			}
+
+			if (data.size() == 4)
+			{
+				ch.messages.push_back(iMessage(std::stoi(data[0]), std::stoi(data[1]), data[2], string_to_hash(data[3])));
+			}
+		}
+
 	}
 }
 
-void Storage::AppendMessage(Channel c, iMessage msg)
+void Storage::AppendMessage(Channel c, iMessage msg, User currentUser)
 {
-	string filePath = "chat_history/" + c.name + "messagedata.txt";
+	std::string encFilePath = "chat_history/" + currentUser.name + "_" + c.name + "messagedataEnc.bin";
 
-	// 1) Read existing file content
-	std::fstream inFile(filePath, std::fstream::out | std::fstream::app | std::fstream::ate);
-	if (!inFile.is_open() && !inFile.good())
+	std::stringstream ss;
+	ss << msg.timestamp << ";" << msg.member_id << ";" << msg.text << ";" << hash_to_string(msg.hash);
+
+	std::ofstream out(encFilePath, std::ios::binary | std::ios::app);
+	if (!out.is_open())
 	{
-		// If no file yet, we can just write everything
-		std::ofstream createFile(filePath, std::ios::out | std::ios::trunc);
-		if (!createFile)
-		{
-			//wxMessageBox("Failed to create chat history file", "Error");
-			return;
-		}
-		createFile << msg.timestamp << ";" << std::to_string(msg.member_id) << ";" << msg.text << ";" << hash_to_string(msg.hash) << std::endl;
-
-		createFile.close();
 		return;
 	}
 
-	inFile << msg.timestamp << ";" << std::to_string(msg.member_id) << ";" << msg.text << ";" << hash_to_string(msg.hash) << std::endl;
-	inFile.close();
-	return;
+	if (!EncryptMessageGCM(ss.str(), key, out))
+	{
+		HandleOpenSSLErrors();
+	}
+
+	out.close();
 }
+
+
 
 Channel& Storage::GetCurrentChannel()
 {
@@ -209,5 +221,3 @@ string Storage::ToFileString()
 	}
 	return out.str();
 }
-
-

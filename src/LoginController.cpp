@@ -2,7 +2,6 @@
 #include <fstream>
 #include <string>
 #include "FileEncrypt.h"
-#include <sstream>
 #include "Storage.h"
 
 LoginController::LoginController(LoginForm* loginForm, User* user, MainLoginInterface* main)
@@ -47,24 +46,7 @@ void LoginController::TryLogin(wxCommandEvent& event)
 
 		if (maybeUser.has_value() && password == "s")
 		{
-			m_loginForm->EndModal(wxID_OK);
-			std::vector<unsigned char> key = MakeKeyFromPassword(username+password);
-			std::stringstream encryptPath;
-			encryptPath << "../encrypt_" << username << ".txt";
-
-			std::stringstream decryptPath;
-			decryptPath << "../decrypt_" << username << ".txt";
-
-			if (!EncryptFiles(key.data(), "../users.txt", encryptPath.str()))
-			{
-				HandleOpenSSLErrors();
-			}
-
-			if (!DecryptFiles(key.data(), encryptPath.str(), decryptPath.str()))
-			{
-				HandleOpenSSLErrors();
-			}
-			
+			m_loginForm->EndModal(wxID_OK);			
 			main->Login(maybeUser.value(), password);
 		}
 		else
