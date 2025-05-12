@@ -20,7 +20,7 @@ void RunNetworkTest(MainReceiveMessageInterface *mn)
 	// Write a message to a channel:
 	std::time_t t;
 	iMessage msg(time(&t), 1 /* iMessage class needs to have GUIDS and not member_id */, "NetworkTest!");
-	
+
 	PierProtocol::SendMSG(mn->GetStorage().GetCurrentChannel(), msg, mn->GetCurrentUser(), mn->GetStorage());
 	
 	wg.reset();

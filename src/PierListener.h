@@ -43,6 +43,7 @@ private:
 	MainReceiveMessageInterface* mn = nullptr;
 	tcp::socket sock;
 	boost::asio::io_context& io_;
+	std::string dynbuf{};
 	std::array<char, 1024> recvbuf {0};
 
 };

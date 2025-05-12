@@ -7,7 +7,7 @@ using boost::asio::ip::tcp;
 
 void tcp_connection::start_receive()
 {
-	async_read(sock, buffer(recvbuf), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
+	async_read(sock, dynamic_buffer(dynbuf), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
 }
 
 void tcp_connection::start_write(const_buffer data)
@@ -21,9 +21,12 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 	if (!err)
 	{
 		std::string header_string;
-		PierProtocol::PierHeader header = PierProtocol::PierHeader::from_string(std::string(recvbuf.data(), bytes_read));
+		PierProtocol::PierHeader header = PierProtocol::PierHeader::from_string(dynbuf);
 		
+
+
 		std::string received( recvbuf.data() + header.to_string().length(), bytes_read - header.to_string().length());
+		
 
 		Storage storage = mn->GetStorage();
 
@@ -49,39 +52,33 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 					return;
 				}
 				
-				const_buffer reintrp_buf = buffer(received);
+				std::stringstream ss(dynbuf);
+				std::vector<std::string> iMsgFields;
+				std::string field{};
 
-				// Make a char pointer to the contents of the buffer.
-				const char* buf_ptr = reinterpret_cast<const char*>(reintrp_buf.data());
+				// Skip header
+				for (size_t i = 0; i < 4; i++)
+				{
+					std::getline(ss, field, ';');
 
-				// reinterpret_cast to time_t and increment the pointer by the size of time_t.
-				time_t ts = *(reinterpret_cast<const time_t*>(buf_ptr));
-				buf_ptr += sizeof(time_t);
+				}
 
-				// reinterpret_cast to int and increment the pointer by the size of int.
-				int memb_id = *(reinterpret_cast<const int*>(buf_ptr));
-				buf_ptr += sizeof(int);
+				while (std::getline(ss, field, ';'))
+				{
+					iMsgFields.push_back(field);
+				}
 
-				// <============================> 
-				iMessage::shash hash = *(reinterpret_cast<const iMessage::shash*>(buf_ptr));
-				buf_ptr += sizeof(iMessage::shash);
-
-				// <============================> 
-				iMessage::shash chainhash = *(reinterpret_cast<const iMessage::shash*>(buf_ptr));
-				buf_ptr += sizeof(iMessage::shash);
-
-				// Make a new const_buffer from an offset equal to the buf_ptr.
-				const_buffer text_buf = reintrp_buf + sizeof(time_t) + sizeof(int) + 2 * sizeof(iMessage::shash);
-
-				// Make a text string from the new buffer.
-				std::string text(static_cast<const char*>(text_buf.data()), text_buf.size());
-
+				time_t timestamp = stoi(iMsgFields[0]);
+				int memb_id = stoi(iMsgFields[1]); // Should be a GUID?
+				uint32_t h = stoul(iMsgFields[2]);
+				iMessage::shash hash = *(reinterpret_cast<iMessage::shash*>(&h));
+				h = stoul(iMsgFields[3]);
+				iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
+				std::string text = iMsgFields[4];
 				// Construct an iMessage.
-				iMessage msg(ts, memb_id, text, hash, chainhash);
-
+				iMessage msg(timestamp, memb_id, text, hash, chainhash);
+				
 				mn->ReceiveHandler(this->channel, msg);
-
-				//async_read(sock, buffer(recvbuf), transfer_exactly(header.size), boost::bind(&tcp_connection::read_msg_handler, this, placeholders::error, placeholders::bytes_transferred));
 				
 			}
 			default:
