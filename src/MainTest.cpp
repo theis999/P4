@@ -2,14 +2,19 @@
 #include <wx/msgdlg.h>
 #include "Channel.h"
 #include "Storage.h"
+#include "Tests.h"
+#include <thread>
 
 static Storage testStorage;
 Storage peerTestStorage;
 
 void Main::RunTest(wxCommandEvent& event)
 {
-	// test code
+	std::thread t([&]{RunNetworkTest(this);});
+	t.detach();
 
+	// test code
+	/*
 	testStorage.OpenStorage("../data.txt"); // expect the file to be located in the project root
 	peerTestStorage.OpenStorage("../data.txt");
 
@@ -38,6 +43,7 @@ void Main::RunTest(wxCommandEvent& event)
 	peerTestStorage.GetCurrentChannel().messages.push_back(testMessage5);
 
 	testStorage.GetCurrentChannel().sync();
+	*/
 
 }
 

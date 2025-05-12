@@ -22,6 +22,7 @@ public:
 	Main();
 
 	Storage& GetStorage();
+	User& GetCurrentUser();
 	void OnChannelsBox(wxCommandEvent& event);
 
 	void DisplayMsg(iMessage& m);

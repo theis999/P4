@@ -26,7 +26,7 @@ public:
 	void start_write(boost::asio::const_buffer data);
 
 private:
-	tcp_connection(boost::asio::io_context& io, MainReceiveMessageInterface* mn);
+	tcp_connection(boost::asio::io_context& io, MainReceiveMessageInterface* _mn);
 
 	// Handler function called after first read operation.
 	void handle_first_read(const boost::system::error_code& err, size_t bytes_read);
@@ -43,6 +43,7 @@ private:
 	MainReceiveMessageInterface* mn = nullptr;
 	tcp::socket sock;
 	boost::asio::io_context& io_;
+	std::string dynbuf{};
 	std::array<char, 1024> recvbuf {0};
 
 };
@@ -50,7 +51,7 @@ private:
 class PierListener
 {
 public:
-	PierListener(boost::asio::io_context& io, MainReceiveMessageInterface *mn);
+	PierListener(boost::asio::io_context& io, MainReceiveMessageInterface *_mn);
 	static constexpr int default_listening_port = 10000;
 
 private:

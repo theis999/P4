@@ -12,7 +12,7 @@
 namespace PierProtocol
 {
 
-enum SendType
+enum SendType : uint64_t
 {
     JOIN = 0,
     INVITE,
@@ -33,6 +33,9 @@ struct PierHeader
     GUID sender_GUID;
     GUID channel_GUID;
     uint32_t size;
+
+    std::string to_string();
+    static PierHeader from_string(std::string header);
 };
 
 std::array<char, 40> encode_header(PierHeader header);
