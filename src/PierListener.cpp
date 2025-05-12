@@ -7,7 +7,7 @@ using boost::asio::ip::tcp;
 
 void tcp_connection::start_receive()
 {
-	async_read(sock, buffer(recvbuf), transfer_exactly(sizeof(PierProtocol::PierHeader)), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
+	async_read(sock, dynamic_buffer(dynbuf), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
 }
 
 void tcp_connection::start_write(const_buffer data)
@@ -18,10 +18,15 @@ void tcp_connection::start_write(const_buffer data)
 // TODO: Get the read data out.
 void tcp_connection::handle_first_read(const boost::system::error_code& err, size_t bytes_read)
 {
-	if (!err && ( bytes_read == sizeof(PierProtocol::PierHeader) ))
+	if (!err)
 	{
-		std::string header_string(recvbuf.data(), sizeof(PierProtocol::PierHeader));
-		PierProtocol::PierHeader header = PierProtocol::decode_header(buffer(header_string));
+		std::string header_string;
+		PierProtocol::PierHeader header = PierProtocol::PierHeader::from_string(dynbuf);
+		
+
+
+		std::string received( recvbuf.data() + header.to_string().length(), bytes_read - header.to_string().length());
+		
 
 		Storage storage = mn->GetStorage();
 
@@ -47,7 +52,33 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 					return;
 				}
 				
-				async_read(sock, buffer(recvbuf), transfer_exactly(header.size), boost::bind(&tcp_connection::read_msg_handler, this, placeholders::error, placeholders::bytes_transferred));
+				std::stringstream ss(dynbuf);
+				std::vector<std::string> iMsgFields;
+				std::string field{};
+
+				// Skip header
+				for (size_t i = 0; i < 4; i++)
+				{
+					std::getline(ss, field, ';');
+
+				}
+
+				while (std::getline(ss, field, ';'))
+				{
+					iMsgFields.push_back(field);
+				}
+
+				time_t timestamp = stoi(iMsgFields[0]);
+				int memb_id = stoi(iMsgFields[1]); // Should be a GUID?
+				uint32_t h = stoul(iMsgFields[2]);
+				iMessage::shash hash = *(reinterpret_cast<iMessage::shash*>(&h));
+				h = stoul(iMsgFields[3]);
+				iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
+				std::string text = iMsgFields[4];
+				// Construct an iMessage.
+				iMessage msg(timestamp, memb_id, text, hash, chainhash);
+				
+				mn->ReceiveHandler(this->channel, msg);
 				
 			}
 			default:
@@ -63,7 +94,7 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 	else
 	{
 		// Should maybe just close socket here.
-		async_read(sock, buffer(recvbuf), transfer_exactly(sizeof(PierProtocol::PierHeader)), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
+		async_read(sock, buffer(recvbuf), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
 	}
 }
 

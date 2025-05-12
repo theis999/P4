@@ -10,8 +10,8 @@ Storage peerTestStorage;
 
 void Main::RunTest(wxCommandEvent& event)
 {
-	std::thread([&]{RunNetworkTest(this);});
-	
+	std::thread t([&]{RunNetworkTest(this);});
+	t.detach();
 
 	// test code
 	/*
