@@ -16,7 +16,7 @@ void PierClient::write(const_buffer data)
 	if (!connected)
 	{
 		// Probably needs other retry-solution. This could pause the program for a pretty long time.
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		write(data);
 		return;
 	}
