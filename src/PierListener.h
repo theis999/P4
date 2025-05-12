@@ -54,6 +54,8 @@ public:
 	PierListener(boost::asio::io_context& io, MainReceiveMessageInterface *_mn);
 	~PierListener();
 	static constexpr int default_listening_port = 10000;
+	void SetRunning(bool running);
+	
 
 private:
 	// Start accepting connections.
@@ -62,6 +64,8 @@ private:
 	// Handler function called after accept.
 	void handle_accept(tcp_connection::ptr new_conn, const boost::system::error_code& err);
 
+
+	bool app_running = true;
 	MainReceiveMessageInterface* mn;
 	std::thread io_thread;
 	boost::asio::io_context& io_;

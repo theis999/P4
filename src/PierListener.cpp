@@ -167,6 +167,11 @@ PierListener::~PierListener()
 	io_thread.join();
 }
 
+void PierListener::SetRunning(bool running)
+{
+	app_running = running;
+}
+
 void PierListener::start_accept()
 {
 	tcp_connection::ptr new_conn = tcp_connection::create(io_, mn);
@@ -181,6 +186,9 @@ void PierListener::handle_accept(tcp_connection::ptr new_conn, const boost::syst
 	}
 
 	// Continue accepting.
-	start_accept();
+	if (app_running)
+	{
+		start_accept();
+	}
 }
 
