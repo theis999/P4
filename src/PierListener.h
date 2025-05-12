@@ -52,6 +52,7 @@ class PierListener
 {
 public:
 	PierListener(boost::asio::io_context& io, MainReceiveMessageInterface *_mn);
+	~PierListener();
 	static constexpr int default_listening_port = 10000;
 
 private:
@@ -62,7 +63,9 @@ private:
 	void handle_accept(tcp_connection::ptr new_conn, const boost::system::error_code& err);
 
 	MainReceiveMessageInterface* mn;
+	std::thread io_thread;
 	boost::asio::io_context& io_;
+	boost::asio::executor_work_guard<decltype(io_.get_executor())> wg;
 	tcp::acceptor acceptor;
 };
 

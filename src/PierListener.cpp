@@ -153,11 +153,18 @@ tcp_connection::tcp_connection(boost::asio::io_context& io, MainReceiveMessageIn
 
 
 
-PierListener::PierListener(boost::asio::io_context& io, MainReceiveMessageInterface * _mn) : io_(io), acceptor(io, tcp::endpoint(tcp::v4(), default_listening_port))
+PierListener::PierListener(boost::asio::io_context& io, MainReceiveMessageInterface * _mn) : io_(io), acceptor(io, tcp::endpoint(tcp::v4(), default_listening_port)), wg(io.get_executor())
 {
+	io_thread = std::thread([=]{ io_.run(); });
 	// Start accepting connections.
 	this->mn = _mn;
 	start_accept();
+}
+
+PierListener::~PierListener()
+{
+	wg.reset();
+	io_thread.join();
 }
 
 void PierListener::start_accept()
