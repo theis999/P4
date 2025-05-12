@@ -124,8 +124,8 @@ bool Main::Login(User user, std::string password)
 void Main::ReceiveHandler(Channel *ch, iMessage msg)
 {
 
+	ch->messages.push_back(msg);
 	storage.AppendMessage(*ch, msg);
 	if (ch->channel_id != storage.GetCurrentChannel().channel_id) return;
-	ch->messages.push_back(msg);
 	DisplayMsg(msg);
 }

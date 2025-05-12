@@ -18,84 +18,75 @@ void tcp_connection::start_write(const_buffer data)
 // TODO: Get the read data out.
 void tcp_connection::handle_first_read(const boost::system::error_code& err, size_t bytes_read)
 {
-	if (!err)
+
+	std::string header_string;
+	PierProtocol::PierHeader header = PierProtocol::PierHeader::from_string(dynbuf);
+	std::string received( recvbuf.data() + header.to_string().length(), bytes_read - header.to_string().length());
+	Storage storage = mn->GetStorage();
+
+	switch (header.type)
 	{
-		std::string header_string;
-		PierProtocol::PierHeader header = PierProtocol::PierHeader::from_string(dynbuf);
-		
-
-
-		std::string received( recvbuf.data() + header.to_string().length(), bytes_read - header.to_string().length());
-		
-
-		Storage storage = mn->GetStorage();
-
-		switch (header.type)
+		case PierProtocol::MESSAGE:
 		{
-			case PierProtocol::MESSAGE:
+			bool channel_exists = false;
+			// Check if channel exists & if sender is part of channel.
+			
+			for (Channel ch : storage.channels)
 			{
-				bool channel_exists = false;
-				// Check if channel exists & if sender is part of channel.
-				for (auto& ch : storage.channels)
+				
+				if (ch.global_id == header.channel_GUID) 
 				{
 					
-					if (ch.global_id == header.channel_GUID) 
-					{
-						channel_exists = true;
-						this->channel = &ch;
-						break;
-					}
-				}	
-				if (!channel_exists)
-				{
-					sock.close();
-					return;
+					channel_exists = true;
+					this->channel = &ch;
+					break;
 				}
-				
-				std::stringstream ss(dynbuf);
-				std::vector<std::string> iMsgFields;
-				std::string field{};
-
-				// Skip header
-				for (size_t i = 0; i < 4; i++)
-				{
-					std::getline(ss, field, ';');
-
-				}
-
-				while (std::getline(ss, field, ';'))
-				{
-					iMsgFields.push_back(field);
-				}
-
-				time_t timestamp = stoi(iMsgFields[0]);
-				int memb_id = stoi(iMsgFields[1]); // Should be a GUID?
-				uint32_t h = stoul(iMsgFields[2]);
-				iMessage::shash hash = *(reinterpret_cast<iMessage::shash*>(&h));
-				h = stoul(iMsgFields[3]);
-				iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
-				std::string text = iMsgFields[4];
-				// Construct an iMessage.
-				iMessage msg(timestamp, memb_id, text, hash, chainhash);
-				
-				mn->ReceiveHandler(shared_from_this()->channel, msg);
-				
-			}
-			default:
-				// Invalid type, close socket.
+			}	
+			if (!channel_exists)
+			{
 				sock.close();
-				break;
+				return;
+			}
+				
+			std::stringstream ss(dynbuf);
+			std::vector<std::string> iMsgFields;
+			std::string field{};
+
+			// Skip header
+			for (size_t i = 0; i < 4; i++)
+			{
+				std::getline(ss, field, ';');
+
+			}
+
+			while (std::getline(ss, field, ';'))
+			{
+				iMsgFields.push_back(field);
+			}
+
+			time_t timestamp = stoi(iMsgFields[0]);
+			int memb_id = stoi(iMsgFields[1]); // Should be a GUID?
+			uint32_t h = stoul(iMsgFields[2]);
+			iMessage::shash hash = *(reinterpret_cast<iMessage::shash*>(&h));
+			h = stoul(iMsgFields[3]);
+			iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
+			std::string text = iMsgFields[4];
+			// Construct an iMessage.
+			iMessage msg(timestamp, memb_id, text, hash, chainhash);
+				
+			mn->ReceiveHandler(shared_from_this()->channel, msg);
+				
 		}
+		default:
+			// Invalid type, close socket.
+			sock.close();
+			break;
+	}
 
 		// Decode header. 
 		// Keep receiving.
 		//sock.async_receive(buffer(recvbuf), std::bind(&tcp_connection::handle_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
-	}
-	else
-	{
-		// Should maybe just close socket here.
-		async_read(sock, buffer(recvbuf), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
-	}
+
 }
 
 void tcp_connection::handle_read(const boost::system::error_code& err, size_t bytes_read)
