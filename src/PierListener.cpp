@@ -78,7 +78,7 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				// Construct an iMessage.
 				iMessage msg(timestamp, memb_id, text, hash, chainhash);
 				
-				mn->ReceiveHandler(this->channel, msg);
+				mn->ReceiveHandler(shared_from_this()->channel, msg);
 				
 			}
 			default:

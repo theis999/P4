@@ -1,6 +1,7 @@
 #include "Main.h"
 #include "Storage.h"
 #include <wx/valtext.h>
+#include "Protocol.h"
 
 static Storage storage;
 
@@ -51,6 +52,12 @@ void Main::SendHandler(wxTextCtrl* sendtext)
 	auto m = iMessage(std::time(nullptr), member.member_id, text.ToStdString());
 	storage.GetCurrentChannel().messages.push_back(m);
 	DisplayMsg(m);
+
+	std::thread send_thread([&]
+		{
+			PierProtocol::SendMSG(storage.GetCurrentChannel(), m, currentUser, storage);
+		});
+	send_thread.detach();
 
 	storage.AppendMessage(storage.GetCurrentChannel(), m);
 
@@ -116,7 +123,9 @@ bool Main::Login(User user, std::string password)
 
 void Main::ReceiveHandler(Channel *ch, iMessage msg)
 {
+
 	storage.AppendMessage(*ch, msg);
 	if (ch->channel_id != storage.GetCurrentChannel().channel_id) return;
+	ch->messages.push_back(msg);
 	DisplayMsg(msg);
 }
