@@ -23,60 +23,52 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 	PierProtocol::PierHeader header = PierProtocol::PierHeader::from_string(dynbuf);
 	std::string received( recvbuf.data() + header.to_string().length(), bytes_read - header.to_string().length());
 	Storage storage = mn->GetStorage();
-	Channel& chan = storage.GetCurrentChannel();
-
+	
 
 	switch (header.type)
 	{
 		case PierProtocol::MESSAGE:
 		{
-			bool channel_exists = false;
 			// Check if channel exists & if sender is part of channel.
 			
-			for (Channel& ch : storage.channels)
+			try
 			{
-				
-				if (ch.global_id == header.channel_GUID) 
+				Channel& chan = storage.GetChannel(header.channel_GUID);
+				std::stringstream ss(dynbuf);
+				std::vector<std::string> iMsgFields;
+				std::string field{};
+
+				// Skip header
+				for (size_t i = 0; i < 4; i++)
 				{
-					
-					channel_exists = true;
-					chan = ch;
-					break;
+					std::getline(ss, field, ';');
+
 				}
-			}	
-			if (!channel_exists)
+
+				while (std::getline(ss, field, ';'))
+				{
+					iMsgFields.push_back(field);
+				}
+
+				time_t timestamp = stoi(iMsgFields[0]);
+				int memb_id = stoi(iMsgFields[1]); // Should be a GUID?
+				uint32_t h = stoul(iMsgFields[2]);
+				iMessage::shash hash = *(reinterpret_cast<iMessage::shash*>(&h));
+				h = stoul(iMsgFields[3]);
+				iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
+				std::string text = iMsgFields[4];
+				// Construct an iMessage.
+				iMessage msg(timestamp, memb_id, text, hash, chainhash);
+
+				mn->ReceiveHandler(chan, msg);
+			}
+			catch (const std::exception&)
 			{
 				sock.close();
 				return;
 			}
-				
-			std::stringstream ss(dynbuf);
-			std::vector<std::string> iMsgFields;
-			std::string field{};
 
-			// Skip header
-			for (size_t i = 0; i < 4; i++)
-			{
-				std::getline(ss, field, ';');
-
-			}
-
-			while (std::getline(ss, field, ';'))
-			{
-				iMsgFields.push_back(field);
-			}
-
-			time_t timestamp = stoi(iMsgFields[0]);
-			int memb_id = stoi(iMsgFields[1]); // Should be a GUID?
-			uint32_t h = stoul(iMsgFields[2]);
-			iMessage::shash hash = *(reinterpret_cast<iMessage::shash*>(&h));
-			h = stoul(iMsgFields[3]);
-			iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
-			std::string text = iMsgFields[4];
-			// Construct an iMessage.
-			iMessage msg(timestamp, memb_id, text, hash, chainhash);
-				
-			mn->ReceiveHandler(chan, msg);
+			
 				
 		}
 		default:
