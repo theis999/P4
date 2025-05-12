@@ -23,6 +23,8 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 	PierProtocol::PierHeader header = PierProtocol::PierHeader::from_string(dynbuf);
 	std::string received( recvbuf.data() + header.to_string().length(), bytes_read - header.to_string().length());
 	Storage storage = mn->GetStorage();
+	Channel& chan = storage.GetCurrentChannel();
+
 
 	switch (header.type)
 	{
@@ -31,14 +33,14 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 			bool channel_exists = false;
 			// Check if channel exists & if sender is part of channel.
 			
-			for (Channel ch : storage.channels)
+			for (Channel& ch : storage.channels)
 			{
 				
 				if (ch.global_id == header.channel_GUID) 
 				{
 					
 					channel_exists = true;
-					this->channel = &ch;
+					chan = ch;
 					break;
 				}
 			}	
@@ -74,7 +76,7 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 			// Construct an iMessage.
 			iMessage msg(timestamp, memb_id, text, hash, chainhash);
 				
-			mn->ReceiveHandler(shared_from_this()->channel, msg);
+			mn->ReceiveHandler(chan, msg);
 				
 		}
 		default:
@@ -146,7 +148,7 @@ void tcp_connection::read_msg_handler(const boost::system::error_code& err, size
 		// Construct an iMessage.
 		iMessage msg(ts, memb_id, text, hash, chainhash);
 
-		mn->ReceiveHandler(this->channel, msg);
+		//mn->ReceiveHandler(ch, msg);
 
 	}
 

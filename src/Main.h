@@ -35,7 +35,7 @@ public:
 
 	bool Login(User user, string password);
 
-	void ReceiveHandler(Channel *ch, iMessage msg);
+	void ReceiveHandler(Channel& ch, iMessage msg);
 
 	void DoLogin();
 	void ClickCreateNewUser(wxCommandEvent& event);

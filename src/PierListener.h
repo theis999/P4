@@ -39,7 +39,7 @@ private:
 	
 	void read_msg_handler(const boost::system::error_code& err, size_t bytes_read);
 	
-	Channel *channel;
+
 	MainReceiveMessageInterface* mn = nullptr;
 	tcp::socket sock;
 	boost::asio::io_context& io_;

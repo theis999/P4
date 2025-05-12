@@ -121,11 +121,11 @@ bool Main::Login(User user, std::string password)
 	return true; // if storage can be opened 
 }
 
-void Main::ReceiveHandler(Channel *ch, iMessage msg)
+void Main::ReceiveHandler(Channel& ch, iMessage msg)
 {
 
-	ch->messages.push_back(msg);
-	storage.AppendMessage(*ch, msg);
-	if (ch->channel_id != storage.GetCurrentChannel().channel_id) return;
+	ch.messages.push_back(msg);
+	storage.AppendMessage(ch, msg);
+	if (ch.channel_id != storage.GetCurrentChannel().channel_id) return;
 	DisplayMsg(msg);
 }
