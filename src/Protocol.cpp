@@ -9,6 +9,18 @@
 
 
 
+std::string PierProtocol::ip_str_from_bytes(std::byte ip[4])
+{
+    std::string ip_string = std::format("{}.{}.{}.{}",
+        std::to_integer<uint8_t>(ip[0]),
+        std::to_integer<uint8_t>(ip[1]),
+        std::to_integer<uint8_t>(ip[2]),
+        std::to_integer<uint8_t>(ip[3])
+    );
+    
+    return ip_string;
+}
+
 std::array<char, 40> PierProtocol::encode_header(PierHeader header)
 {
     
@@ -93,21 +105,37 @@ void PierProtocol::SendMSG(Channel ch, iMessage msg, User sender, Storage &stora
 
     for (auto& mem : ch.members)
     {
-        auto& user = storage.users.at(mem.second.user_id);
+        User& user = storage.users.at(mem.second.user_id);
 
-        std::string ip_string = std::format("{}.{}.{}.{}", 
-            static_cast<uint8_t>(user.IPv4[0]), 
-            static_cast<uint8_t>(user.IPv4[1]), 
-            static_cast<uint8_t>(user.IPv4[2]), 
-            static_cast<uint8_t>(user.IPv4[3])
-            );
+        std::string ip_string = ip_str_from_bytes(user.IPv4);
         endpoints.emplace_back(boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address(ip_string), 10000));
     }
 
-    PierClient::write_several_peers(endpoints, boost::asio::buffer(out));
+    PierClient::write_several_peers(endpoints, boost::asio::buffer(out), PierClient::ClientFlags::NO_ANSWER_EXPECTED);
     
   
 }
+
+void PierProtocol::SendSyncProbe(Channel ch, iMessage::shash hash, User sender, Storage& storage)
+{
+    std::vector<tcp::endpoint> endpoints;
+   
+    for (auto& mem : ch.members)
+    {
+        User& user = storage.users.at(mem.second.user_id);
+        std::string ip_string = ip_str_from_bytes(user.IPv4);
+        endpoints.emplace_back(boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address(ip_string), 10000));
+    }
+   
+    // Prepare sync data in string format here.
+
+    std::string sync_data;
+
+    PierClient::write_several_peers(endpoints, boost::asio::buffer(sync_data), PierClient::ClientFlags::EXPECTING_SYNC_ANSWER);
+
+}
+
+
 
 std::string PierProtocol::PierHeader::to_string()
 {

@@ -10,6 +10,12 @@ PierClient::PierClient(io_context& io, tcp::endpoint endpoint) : io_(io), sock(i
 	do_connect(endpoint);
 }
 
+PierClient::PierClient(io_context& io, tcp::endpoint endpoint, uint8_t flags) : io_(io), sock(io)
+{
+	flags_ = ClientFlags{flags};
+	do_connect(endpoint);
+}
+
 void PierClient::write(const_buffer data)
 {
 	// We sleep the thread and try again if not connected.
@@ -29,7 +35,7 @@ void PierClient::close()
 	sock.close();
 }
 
-void PierClient::write_several_peers(std::vector<tcp::endpoint> endpoints, const_buffer data)
+void PierClient::write_several_peers(std::vector<tcp::endpoint> endpoints, const_buffer data, PierClient::ClientFlags flags)
 {
 	io_context io;
 	// Work guard stops io.run() from returning when it has ran out of work.
@@ -77,21 +83,25 @@ void PierClient::do_write(const_buffer data)
 void PierClient::handle_read(const boost::system::error_code& err, size_t bytes_read)
 {
 	// Switch-case with different options for returns from peer.
+
+	switch (flags_)
+	{
+		case PierClient::ClientFlags::NO_ANSWER_EXPECTED: [[unlikely]] 
+			break;
+		case PierClient::ClientFlags::EXPECTING_SYNC_ANSWER: [[likely]]
+			break;
+		case PierClient::ClientFlags::EXPECTING_SHASH_ANSWER:
+			break;
+		default:
+			// Ideally we don't get here.
+			break;
+	}
 }
 
 void PierClient::handle_data_send(const boost::system::error_code err, size_t bytes_sent)
 {
-	if (!err)
+	if (std::to_underlying(flags_))
 	{
-		// Receive possible answer from server.
-
-		/*
-		if (expecting_answer)
-		*/
-		
-		if (false) // TEMPORARY
-		{
-			async_read(sock, buffer(recvbuf), std::bind(&PierClient::handle_read, this, placeholders::error, placeholders::bytes_transferred));
-		}
+		async_read(sock, dynamic_buffer(dynbuf), std::bind(&PierClient::handle_read, this, placeholders::error, placeholders::bytes_transferred));
 	}
 }
