@@ -12,15 +12,11 @@ Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(
 void Main::OnAppClose(wxCloseEvent& event)
 {
 	if (currentPassword != "") // prevent attempting save when not logged in
-		storage.Save("../data.txt");
-
-	//Block for creating encrypted channel data file for each user
-	encryptPathData.str(""); // clear existing content, just in case
-	encryptPathData << "../data_" << currentUser.name << ".txt";
-	if (!EncryptFiles(key.data(), "../data.txt", encryptPathData.str()))
-	{
-		wxMessageBox("Failed to encrypt and save user data on shutdown.", "File Error", wxOK | wxICON_ERROR);
-	}
+		if (!currentUser.name.empty())
+		{
+			std::string userDataFile = "data_user_" + currentUser.name + ".bin";
+			storage.Save(userDataFile);
+		}
 
 	event.Skip();	
 }
@@ -88,14 +84,14 @@ void Main::DisplayMsg(iMessage& msg)
 
 bool Main::Login(User user, std::string password)
 {
-
 	this->currentUser = user;
 	this->currentPassword = password;
 
-	key.clear();
-	key = MakeKeyFromPassword(currentUser.name + currentPassword);
+	encryption_key.clear();
+	encryption_key = MakeKeyFromPassword(currentUser.name + currentPassword);
 
-	storage.OpenStorage("../data.txt", key, currentUser); // expect the file to be located in the project root
+	std::string userDataFile = "data_" + currentUser.name + ".bin";
+	storage.OpenStorage(userDataFile, encryption_key, currentUser);
 	if (storage.channels.empty())
 	{
 		throw "Not implemented: storage failed to unlock the channels data due to password verification failure.";

@@ -18,7 +18,7 @@ public:
 	User currentUser;
 	string currentPassword;
 
-	std::vector<unsigned char> key;
+	std::vector<unsigned char> encryption_key;
 	std::stringstream encryptPath;
 	std::stringstream encryptPathData;
 
