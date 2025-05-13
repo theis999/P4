@@ -102,6 +102,7 @@ void Storage::OpenStorage(string filename, std::vector<unsigned char> encryption
 	//std::filesystem::path cwd = std::filesystem::current_path() / filename;
 	std::vector<std::string> decryptedLines;
 
+	// This if statement is for testing and the transition to the encrypted data files. 
 	// If the individual file doesn't exist, fallback to old data.txt - This functionionality can also be used if the channel access needs to be changed during testing.
 	if (!std::filesystem::exists(filename))
 	{
@@ -109,11 +110,10 @@ void Storage::OpenStorage(string filename, std::vector<unsigned char> encryption
 		std::ifstream oldFile(fallbackPath);
 		if (!oldFile.is_open())
 		{
-			wxMessageBox("No existing user data file or legacy data.txt found.", "Error", wxOK | wxICON_ERROR);
+			wxMessageBox("No existing user data file or old data.txt found.", "Error", wxOK | wxICON_ERROR);
 			return;
 		}
 
-		// Read legacy data
 		std::vector<std::string> oldDataLines;
 		std::string line;
 		while (std::getline(oldFile, line))
@@ -122,7 +122,6 @@ void Storage::OpenStorage(string filename, std::vector<unsigned char> encryption
 		}
 		oldFile.close();
 
-		// Encrypt each line into the new per-user file
 		std::ofstream newUserFile(filename, std::ios::binary);
 		if (!newUserFile.is_open())
 		{
@@ -135,9 +134,9 @@ void Storage::OpenStorage(string filename, std::vector<unsigned char> encryption
 		}
 		newUserFile.close();
 
-		// Now set the decryptedLines to the legacyLines
 		decryptedLines = std::move(oldDataLines);
 	}
+	//This is the "real" method for decrypting the file
 	else
 	{
 		if (!DecryptAllMessagesGCM(encryption_key, filename, decryptedLines))
@@ -243,9 +242,6 @@ void Storage::AppendMessage(const Channel& c,const iMessage& msg,const User& cur
 		wxMessageBox("Failed to encrypt and append message.", "Encryption Error", wxOK | wxICON_ERROR);
 	}
 }
-
-
-
 
 Channel& Storage::GetCurrentChannel()
 {
