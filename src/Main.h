@@ -6,6 +6,7 @@
 #include "LoginController.h"
 #include "Channel.h"
 #include "MainLoginInterface.h"
+#include <sstream>
 
 using std::to_string;
 
@@ -16,6 +17,10 @@ class Main : public ThePier, public MainLoginInterface
 public:
 	User currentUser;
 	string currentPassword;
+
+	std::vector<unsigned char> encryption_key;
+	std::stringstream encryptPath;
+	std::stringstream encryptPathData;
 
 	Main();
 
