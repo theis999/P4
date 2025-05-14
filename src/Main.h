@@ -42,7 +42,7 @@ public:
 	void UpdateLoginButtonLabel();
 	bool PromptLogin(std::string& outUsername);
 
-	void RunTest(wxCommandEvent& event);
+	//void RunTest(wxCommandEvent& event);
 
 	void OnAppClose(wxCloseEvent& event);
 };
