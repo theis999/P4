@@ -1,6 +1,7 @@
 #pragma once
 #include <boost/asio.hpp>
 #include <vector>
+#include "iMessage.h"
 
 using boost::asio::ip::tcp;
 using boost::asio::io_context;
@@ -27,6 +28,10 @@ public:
 
 	static void write_several_peers(std::vector<tcp::endpoint> endpoints, boost::asio::const_buffer data, PierClient::ClientFlags flags);
 	
+	iMessage::shash get_received_shash();
+	uint8_t recvflag = 0;
+	std::vector<iMessage::shash> recv_shashes{};
+
 private:
 	void do_connect(const tcp::endpoint endpoint);
 	void do_write(boost::asio::const_buffer data);
@@ -37,6 +42,8 @@ private:
 	tcp::socket sock;
 	io_context& io_;
 	std::string dynbuf{};
+	std::string received_shash{};
+	
 	std::array<char, 1024> recvbuf;
 	
 	ClientFlags flags_{};

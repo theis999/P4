@@ -6,6 +6,8 @@
 #include "Member.h"
 #include "iMessage.h"
 
+class User;
+class Storage;
 using std::vector;
 
 
@@ -36,7 +38,7 @@ public:
 	};
 
 	// Sync related functions, found in sync.ccp
-	void sync();
+	void sync(Member& memb, User &sender, Storage &storage);
 	bool resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin);
 	syncOutput findOrigins(std::map<iMessage::shash, int>& hashMap, vector<iMessage::shash> clientHashes, vector<iMessage::shash> peerHashes, int global_i);
 

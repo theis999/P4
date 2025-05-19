@@ -51,6 +51,7 @@ private:
 class PierListener
 {
 public:
+	static bool syncing;
 	PierListener(boost::asio::io_context& io, MainReceiveMessageInterface *_mn);
 	~PierListener();
 	static constexpr int default_listening_port = 10000;
