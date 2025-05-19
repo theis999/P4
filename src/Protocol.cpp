@@ -61,7 +61,7 @@ PierProtocol::PierHeader PierProtocol::decode_header(boost::asio::const_buffer h
     return out;
 }
 
-void PierProtocol::SendMSG(Channel ch, iMessage msg, User sender, Storage &storage)
+void PierProtocol::SendMSG(Channel &ch, iMessage msg, User &sender, Storage &storage)
 {
     std::vector<boost::asio::ip::tcp::endpoint> endpoints;
 
@@ -116,7 +116,7 @@ void PierProtocol::SendMSG(Channel ch, iMessage msg, User sender, Storage &stora
   
 }
 
-void PierProtocol::SendSyncProbe(Channel ch, iMessage::shash hash, User sender, Storage& storage)
+void PierProtocol::SendSyncProbe(Channel &ch, iMessage::shash hash, User &sender, Storage& storage)
 {
     std::vector<tcp::endpoint> endpoints;
    
@@ -126,13 +126,39 @@ void PierProtocol::SendSyncProbe(Channel ch, iMessage::shash hash, User sender, 
         std::string ip_string = ip_str_from_bytes(user.IPv4);
         endpoints.emplace_back(boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address(ip_string), 10000));
     }
-   
-    // Prepare sync data in string format here.
 
+    // Prepare sync data in string format here.
     std::string sync_data;
+
+    PierHeader header =
+    {
+
+    };
+
 
     PierClient::write_several_peers(endpoints, boost::asio::buffer(sync_data), PierClient::ClientFlags::EXPECTING_SYNC_ANSWER);
 
+}
+
+void PierProtocol::SendSyncStatus(Channel& ch, Member memb, uint8_t flag, User& sender, Storage& storage)
+{
+    std::string data_str = std::format("{}", flag);
+    PierHeader header =
+    {
+        .type = SendType::SYNC_STATUS,
+        .sender_GUID = sender.unique_id,
+        .channel_GUID = ch.global_id,
+        .size = data_str.length(),
+    };
+
+    std::string out = header.to_string();
+    out.append(data_str);
+    
+    std::vector<tcp::endpoint> endpoint;
+    User& user = storage.users.at(memb.user_id);
+    endpoint.emplace_back(boost::asio::ip::make_address(ip_str_from_bytes(user.IPv4)), 10000);
+
+    PierClient::write_several_peers(endpoint, boost::asio::buffer(out), PierClient::ClientFlags::NO_ANSWER_EXPECTED);
 }
 
 

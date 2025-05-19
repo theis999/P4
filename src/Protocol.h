@@ -4,6 +4,7 @@
 #include "iMessage.h"
 #include "Storage.h"
 #include "PierListener.h"
+#include "PierClient.h"
 #include "MainReceiveMessageInterface.h"
 
 
@@ -53,12 +54,12 @@ private:
     MainReceiveMessageInterface* mn;
 };
 
-void SendMSG(Channel ch, iMessage msg, User sender, Storage &storage);
-void SendMSGRequest(Channel ch, Member memb, iMessage::shash hash, User sender);
-void SendMSGMulti(Channel ch, Member memb, std::vector<iMessage> msgs, User sender);
-void SendSyncProbe(Channel ch, iMessage::shash hash, User sender, Storage &storage);
-void SendSyncStatus(Channel ch, Member memb, uint8_t flag, User sender);
-void SendSHASHRequest(Channel ch, Member memb, uint32_t amount, User sender);
-void SendSHASHMulti(Channel ch, Member memb, std::vector<iMessage::shash> hashes, User sender);
+void SendMSG(Channel &ch, iMessage msg, User &sender, Storage &storage);
+void SendMSGRequest(Channel &ch, Member memb, iMessage::shash hash, User &sender);
+void SendMSGMulti(Channel &ch, Member memb, std::vector<iMessage> msgs, User &sender);
+void SendSyncProbe(Channel &ch, iMessage::shash hash, User &sender, Storage &storage);
+void SendSyncStatus(Channel &ch, Member memb, uint8_t flag, User &sender, Storage& storage);
+void SendSHASHRequest(Channel &ch, Member memb, uint32_t amount, User &sender);
+void SendSHASHMulti(Channel &ch, Member memb, std::vector<iMessage::shash> hashes, User &sender);
 
 }

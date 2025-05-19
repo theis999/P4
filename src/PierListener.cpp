@@ -22,9 +22,8 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 	std::string header_string;
 	PierProtocol::PierHeader header = PierProtocol::PierHeader::from_string(dynbuf);
 	std::string received( recvbuf.data() + header.to_string().length(), bytes_read - header.to_string().length());
-	Storage storage = mn->GetStorage();
+	Storage &storage = mn->GetStorage();
 	
-
 	switch (header.type)
 	{
 		case PierProtocol::MESSAGE:
@@ -67,9 +66,25 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				sock.close();
 				return;
 			}
-
-			
+			break;
+		}
+		case PierProtocol::SendType::SYNC_PROBE:
+		{
+			try
+			{
+				Channel& chan = storage.GetChannel(header.channel_GUID);
 				
+				std::thread send_thread([&]
+					{
+						PierProtocol::SendSyncStatus(chan, Member() /*Placeholder*/, 1 /*Placeholder*/, mn->GetCurrentUser());
+					});
+			}
+			catch (const std::exception&)
+			{
+				sock.close();
+				return;
+			}
+			break;
 		}
 		default:
 			// Invalid type, close socket.
@@ -89,7 +104,7 @@ void tcp_connection::handle_read(const boost::system::error_code& err, size_t by
 	{
 		// Apend buffer to string or something like that.
 	}
-
+	
 	// Keep receiving. 
 	sock.async_receive(buffer(recvbuf), std::bind(&tcp_connection::handle_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
 }

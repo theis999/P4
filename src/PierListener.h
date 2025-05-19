@@ -24,7 +24,7 @@ public:
 
 	// Write data over the connection. The const_buffer must be valid while the write completes asynchronously.
 	void start_write(boost::asio::const_buffer data);
-
+	
 private:
 	tcp_connection(boost::asio::io_context& io, MainReceiveMessageInterface* _mn);
 

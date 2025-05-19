@@ -19,7 +19,7 @@ Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(
 void Main::OnAppClose(wxCloseEvent& event)
 {
 	main_listener.SetRunning(false);
-	main_io.stop();
+	main_io.stop();	
 
 	if (currentPassword != "") // prevent attempting save when not logged in
 		storage.Save("../data.txt");
@@ -125,12 +125,11 @@ bool Main::Login(User user, std::string password)
 }
 
 void Main::ReceiveHandler(Channel& ch, iMessage msg)
-{
+{	
 	for(Channel& c : storage.channels)
 		if (c.channel_id == ch.channel_id)
 			c.messages.push_back(msg);
-			
-	storage.AppendMessage(ch, msg);
+
 	if (ch.channel_id != storage.GetCurrentChannel().channel_id) 
 		return;
 	DisplayMsg(msg);
