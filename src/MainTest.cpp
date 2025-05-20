@@ -2,6 +2,8 @@
 #include <wx/msgdlg.h>
 #include "Channel.h"
 #include "Storage.h"
+#include "Tests.h"
+#include <thread>
 
 static Storage testStorage;
 Storage peerTestStorage;
@@ -39,6 +41,7 @@ void Main::RunTest(wxCommandEvent& event)
 	peerTestStorage.GetCurrentChannel().messages.push_back(testMessage4);
 	peerTestStorage.GetCurrentChannel().messages.push_back(testMessage5);
 
-	testStorage.GetCurrentChannel().sync();	
+	testStorage.GetCurrentChannel().sync();
+
 }
 */

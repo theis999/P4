@@ -1,12 +1,14 @@
 #include "Main.h"
 #include "Storage.h"
 #include <wx/valtext.h>
+#include "Protocol.h"
+#include "Signing.h"
 #include "FileEncrypt.h"
 #include <filesystem>
 
 static Storage storage;
 
-Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(730, 325), wxDEFAULT_FRAME_STYLE | wxSYSTEM_MENU | wxTAB_TRAVERSAL)
+Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(730, 325), wxDEFAULT_FRAME_STYLE | wxSYSTEM_MENU | wxTAB_TRAVERSAL), main_listener(main_io, this)
 {
 	    wxTextValidator validator(wxFILTER_EXCLUDE_CHAR_LIST);
 		wxArrayString invalidChars;
@@ -15,11 +17,13 @@ Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(
 		invalidChars.Add(wxT("\n"));
 		validator.SetExcludes(invalidChars);
 		SendText->SetValidator(validator);
-		
 }
 
 void Main::OnAppClose(wxCloseEvent& event)
 {
+	main_listener.SetRunning(false);
+	main_io.stop();	
+
 	if (currentPassword != "") // prevent attempting save when not logged in
 		if (!currentUser.name.empty())
 		{
@@ -55,10 +59,22 @@ void Main::SendHandler(wxTextCtrl* sendtext)
 	sendtext->Clear();
 	
 	auto& member = storage.GetCurrentChannel().GetMemberByUserId(currentUser.user_id);
-	auto m = iMessage(std::time(nullptr), member.member_id, text.ToStdString());
-	storage.GetCurrentChannel().messages.push_back(m);
+
+	string privkey = Signing::readFileToString(".\\key.pem");
+	string signature = Signing::signMessage(privkey, text.ToStdString());
+
+	auto m = iMessage(std::time(nullptr), member.member_id, text.ToStdString(), signature);
+	storage.GetCurrentChannel().messages.emplace_back(m);
 	DisplayMsg(m);
 
+	// Send message via network in a separate thread, so program doesn't block.
+	std::thread send_thread([&]
+		{
+			PierProtocol::SendMSG(storage.GetCurrentChannel(), m, currentUser, storage);
+		});
+	send_thread.detach();
+
+	storage.AppendMessage(storage.GetCurrentChannel(), m);
 	storage.AppendMessage(storage.GetCurrentChannel(), m, currentUser);
 
 	sendtext->SetFocus();
@@ -67,6 +83,11 @@ void Main::SendHandler(wxTextCtrl* sendtext)
 Storage& Main::GetStorage()
 {
 	return storage;
+}
+
+User& Main::GetCurrentUser()
+{
+	return currentUser;
 }
 
 void Main::OnChannelsBox(wxCommandEvent& event)
@@ -121,9 +142,13 @@ bool Main::Login(User user, std::string password)
 	return true; // if storage can be opened 
 }
 
-void Main::ReceiveHandler(Channel *ch, iMessage msg)
-{
-	storage.AppendMessage(*ch, msg, currentUser);
-	if (ch->channel_id != storage.GetCurrentChannel().channel_id) return;
+void Main::ReceiveHandler(Channel& ch, iMessage msg)
+{	
+	for(Channel& c : storage.channels)
+		if (c.channel_id == ch.channel_id)
+			c.messages.emplace_back(msg);
+
+	if (ch.channel_id != storage.GetCurrentChannel().channel_id) 
+		return;
 	DisplayMsg(msg);
 }

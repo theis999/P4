@@ -4,21 +4,22 @@
 #include <sstream>
 #include <format>
 #include "time.h"
+#include "Signing.h"
 
-iMessage::iMessage(time_t _timestamp, int _member_id, string _text) :
-	timestamp(_timestamp), member_id(_member_id), text(_text)
+iMessage::iMessage(time_t _timestamp, int _member_id, string _text, string _signature) :
+	timestamp(_timestamp), member_id(_member_id), text(_text), signature(_signature)
 {
 	computeHash();
 }
 
-iMessage::iMessage(time_t _timestamp, int _member_id, string _text, shash _hash) :
-	timestamp(_timestamp), member_id(_member_id), text(_text), hash(_hash)
+iMessage::iMessage(time_t _timestamp, int _member_id, string _text, string _signature, shash _hash) :
+	timestamp(_timestamp), member_id(_member_id), text(_text), signature(_signature), hash(_hash)
 {
 	computeHash();
 }
 
-iMessage::iMessage(time_t _timestamp, int _member_id, string _text, shash _hash, shash _chainHash) :
-	timestamp(_timestamp), member_id(_member_id), text(_text), hash(_hash), chainHash(_chainHash)
+iMessage::iMessage(time_t _timestamp, int _member_id, string _text, string _signature, shash _hash, shash _chainHash) :
+	timestamp(_timestamp), member_id(_member_id), text(_text), signature(_signature), hash(_hash), chainHash(_chainHash)
 {
 	computeHash();
 }
@@ -30,6 +31,50 @@ string iMessage::FormatToPrint(string user_name)
 
 	return std::format("{} {}: {}\n", string(timefmtstring), user_name, text);
 }
+
+std::string iMessage::to_sc_sep_str()
+{
+	std::string out;
+
+	// Append timestamp;
+	out.append(std::format("{};", this->timestamp));
+	// Append member id
+	out.append(std::format("{};", this->member_id)); // NEEDS TO BE A GUID
+	// Append hash
+	out.append(std::format("{};", *(reinterpret_cast<uint32_t*>(this->hash.data()))));
+	// Append chainhash
+	out.append(std::format("{};", *(reinterpret_cast<uint32_t*>(this->chainHash.data()))));
+	// Append text last.
+	out.append(this->text);
+
+	return out;
+}
+
+iMessage iMessage::from_str(std::string iMessageString)
+{
+	std::vector<std::string> iMsgFields{};
+	std::stringstream ss(iMessageString);
+	std::string field{0};
+	while (std::getline(ss, field, ';'))
+	{
+		iMsgFields.push_back(field);
+	}
+
+	time_t timestamp = stoi(iMsgFields[0]);
+	int memb_id = stoi(iMsgFields[1]); // Should be a GUID?
+	uint32_t h = stoul(iMsgFields[2]);
+	iMessage::shash hash = *(reinterpret_cast<iMessage::shash*>(&h));
+	h = stoul(iMsgFields[3]);
+	iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
+	std::string signature = iMsgFields[4];
+	std::string text = iMsgFields[5];
+	
+	// Construct an iMessage.
+	iMessage msg(timestamp, memb_id, text, signature, hash, chainhash);
+
+	return msg;
+}
+
 
 bool iMessage::hasHash()
 {

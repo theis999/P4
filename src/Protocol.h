@@ -4,6 +4,7 @@
 #include "iMessage.h"
 #include "Storage.h"
 #include "PierListener.h"
+#include "PierClient.h"
 #include "MainReceiveMessageInterface.h"
 
 
@@ -12,7 +13,7 @@
 namespace PierProtocol
 {
 
-enum SendType
+enum SendType : uint64_t
 {
     JOIN = 0,
     INVITE,
@@ -33,10 +34,15 @@ struct PierHeader
     GUID sender_GUID;
     GUID channel_GUID;
     uint32_t size;
+
+    PierHeader(SendType type_, GUID sender_guid, GUID channel_guid, uint32_t size_);
+
+    std::string to_string();
+    static PierHeader from_string(std::string header);
 };
 
-std::array<char, 40> encode_header(PierHeader header);
-PierHeader decode_header(boost::asio::const_buffer header);
+std::string ip_str_from_bytes(std::byte ip[4]);
+
 
 class ProtocolHandler
 {
@@ -46,12 +52,12 @@ private:
     MainReceiveMessageInterface* mn;
 };
 
-void SendMSG(Channel ch, iMessage msg, User sender, Storage &storage);
-void SendMSGRequest(Channel ch, Member memb, iMessage::shash hash, User sender);
-void SendMSGMulti(Channel ch, Member memb, std::vector<iMessage> msgs, User sender);
-void SendSyncProbe(Channel ch, iMessage::shash hash, User sender);
-void SendSyncStatus(Channel ch, Member memb, uint8_t flag, User sender);
-void SendSHASHRequest(Channel ch, Member memb, uint32_t amount, User sender);
-void SendSHASHMulti(Channel ch, Member memb, std::vector<iMessage::shash> hashes, User sender);
+void SendMSG(Channel &ch, iMessage msg, User &sender, Storage &storage);
+void SendMSGRequest(Channel &ch, Member memb, iMessage::shash hash, User &sender, Storage& storage);
+void SendMSGMulti(Channel &ch, Member memb, std::vector<iMessage> msgs, User &sender, Storage &storage);
+void SendSyncProbe(Channel &ch, iMessage::shash hash, User &sender, Storage &storage);
+void SendSyncStatus(Channel &ch, Member memb, uint8_t flag, User &sender, Storage& storage);
+std::vector<iMessage::shash> SendSHASHRequest(Channel &ch, Member memb, uint32_t global_i, uint32_t n, User &sender, Storage &storage);
+void SendSHASHMulti(Channel &ch, Member memb, std::vector<iMessage::shash> hashes, User &sender, Storage& storage);
 
 }

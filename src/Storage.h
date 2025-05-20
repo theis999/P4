@@ -35,6 +35,7 @@ public:
 
 	int currentChannelIndex = 0;
 	Channel& GetCurrentChannel();
+	Channel& GetChannel(GUID guid);
 
 	void Save(string filename); //Save the data file of the current user
 	string ToFileString();
