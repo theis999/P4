@@ -5,9 +5,11 @@
 using namespace boost::asio;
 using boost::asio::ip::tcp;
 
+bool PierListener::syncing = false;
+
 void tcp_connection::start_receive()
 {
-	async_read(sock, buffer(recvbuf), transfer_exactly(sizeof(PierProtocol::PierHeader)), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
+	async_read(sock, dynamic_buffer(dynbuf), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
 }
 
 void tcp_connection::start_write(const_buffer data)
@@ -18,53 +20,194 @@ void tcp_connection::start_write(const_buffer data)
 // TODO: Get the read data out.
 void tcp_connection::handle_first_read(const boost::system::error_code& err, size_t bytes_read)
 {
-	if (!err && ( bytes_read == sizeof(PierProtocol::PierHeader) ))
+
+	std::string header_string;
+	PierProtocol::PierHeader header = PierProtocol::PierHeader::from_string(dynbuf);
+	std::string received( recvbuf.data() + header.to_string().length(), bytes_read - header.to_string().length());
+	Storage &storage = mn->GetStorage();
+	
+	switch (header.type)
 	{
-		std::string header_string(recvbuf.data(), sizeof(PierProtocol::PierHeader));
-		PierProtocol::PierHeader header = PierProtocol::decode_header(buffer(header_string));
-
-		Storage storage = mn->GetStorage();
-
-		switch (header.type)
+		case PierProtocol::MESSAGE:
 		{
-			case PierProtocol::MESSAGE:
+			// Check if channel exists & if sender is part of channel.
+			
+			try
 			{
-				bool channel_exists = false;
-				// Check if channel exists & if sender is part of channel.
-				for (auto& ch : storage.channels)
+				Channel& chan = storage.GetChannel(header.channel_GUID);
+				std::string msg_str(dynbuf, header.to_string().length(), std::string::npos);
+				iMessage msg = iMessage::from_str(msg_str);
+
+				mn->ReceiveHandler(chan, msg);
+				sock.shutdown(tcp::socket::shutdown_both);
+			}
+			catch (const std::exception&)
+			{
+				sock.close();
+				return;
+			}
+			break;
+		}
+		case PierProtocol::SendType::SYNC_PROBE:
+		{
+			try
+			{
+				Channel& chan = storage.GetChannel(header.channel_GUID);
+				std::stringstream ss(dynbuf);
+				std::string field;
+				for (size_t i = 0; i < 5; i++)
 				{
-					
-					if (ch.global_id == header.channel_GUID) 
-					{
-						channel_exists = true;
-						this->channel = &ch;
-						break;
-					}
-				}	
-				if (!channel_exists)
+					std::getline(ss, field, ';'); // Set field to be the shash
+				}
+
+				uint32_t inc_shash = std::stoul(field);
+
+				iMessage::shash latest_shash = chan.messages.back().hash;
+				uint32_t loc_shash = *(reinterpret_cast<uint32_t*>(latest_shash.data()));
+
+				PierProtocol::PierHeader send_header(PierProtocol::SYNC_STATUS, mn->GetCurrentUser().unique_id, chan.global_id, 0);
+				std::string send{};
+
+				if (loc_shash == inc_shash)
+					send.append(std::format("{};", 2 /* ALL IS WELL */));
+				else if (PierListener::syncing)
+					send.append(std::format("{}", 0 /* ALREADY SYNCING - DENIED */));
+				else
 				{
-					sock.close();
-					return;
+					send.append(std::format("{}", 1 /* ACCEPT SYNC */));
+					PierListener::syncing = true;
 				}
 				
-				async_read(sock, buffer(recvbuf), transfer_exactly(header.size), boost::bind(&tcp_connection::read_msg_handler, this, placeholders::error, placeholders::bytes_transferred));
+				send_header.size = send.length();
+
+				std::string out = send_header.to_string() + send;
+
+				async_write(sock, buffer(out), boost::asio::detached);
+				
+				PierListener::syncing = false;
+			}
+			catch (const std::exception&)
+			{
+				PierListener::syncing = false;
+				sock.close();
+				return;
+			}
+			break;
+		}
+		case PierProtocol::SendType::SHASH_REQUEST:
+		{
+			try
+			{
+				Channel& chan = storage.GetChannel(header.channel_GUID);
+				std::string field{};
+				std::stringstream ss(dynbuf);
+				std::vector<std::string> fields_vec{};
+
+				for (size_t i = 0; i < 4; i++) // Skip header
+				{
+					std::getline(ss, field, ';');
+				}
+				for (size_t i = 0; i < 2; i++)
+				{
+					std::getline(ss, field, ';');
+					fields_vec.push_back(field);
+				}
+
+				int global_i, n;
+				global_i = atoi(fields_vec[0].c_str());
+				n		 = atoi(fields_vec[1].c_str());
+
+
+				std::vector<iMessage::shash> clientHashes{};
+
+				for (int i = chan.messages.size() - global_i - 1; i >= 0 && i >= chan.messages.size() - global_i - n; --i)
+				{
+					clientHashes.push_back(chan.messages[i].hash);
+				}
+
+				PierProtocol::PierHeader send_header(PierProtocol::SHASH_MULTI, mn->GetCurrentUser().unique_id, chan.global_id, 0);
+				std::string send;
+
+				for (auto& hash : clientHashes)
+				{
+					send.append(std::format("{};", *reinterpret_cast<uint32_t*>(hash.data())));
+				}
+
+				send_header.size = send.length();
+				std::string out = send_header.to_string() + send;
+
+				async_write(sock, buffer(out), [&](const boost::system::error_code&, size_t)
+				{
+					sock.shutdown(tcp::socket::shutdown_both);
+				});
 				
 			}
-			default:
-				// Invalid type, close socket.
+			catch (const std::exception&)
+			{
 				sock.close();
-				break;
+				return;
+			}
 		}
+		case PierProtocol::MESSAGE_MULTI:
+		{
+			try
+			{
+				Channel& chan = storage.GetChannel(header.channel_GUID);
+
+				std::string field;
+				std::vector<iMessage> msgs;
+				std::stringstream ss(dynbuf);
+
+				for (size_t i = 0; i < 4; i++) // Skip header
+				{
+					std::getline(ss, field, ';');
+				}
+
+				while (std::getline(ss, field, ';'))
+				{
+					time_t timestamp = stoi(field);
+
+					std::getline(ss, field, ';');
+					int memb_id = stoi(field); // Should be a GUID?
+
+					std::getline(ss, field, ';');
+					uint32_t h = stoul(field);
+					iMessage::shash hash = *(reinterpret_cast<iMessage::shash*>(&h));
+
+					std::getline(ss, field, ';');
+					h = stoul(field);
+					iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
+
+					std::getline(ss, field, ';');
+					std::string text = field;
+
+					// Construct an iMessage.
+					msgs.emplace_back(timestamp, memb_id, text, hash, chainhash);
+				}
+
+				for (auto& msg : msgs)
+				{
+					mn->ReceiveHandler(chan, msg);
+				}
+
+				sock.shutdown(tcp::socket::shutdown_both);
+			}
+			catch (const std::exception&)
+			{
+				sock.close();
+			}
+
+		}
+		default:
+			// Invalid type, close socket.
+			sock.close();
+			break;
+	}
 
 		// Decode header. 
 		// Keep receiving.
 		//sock.async_receive(buffer(recvbuf), std::bind(&tcp_connection::handle_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
-	}
-	else
-	{
-		// Should maybe just close socket here.
-		async_read(sock, buffer(recvbuf), transfer_exactly(sizeof(PierProtocol::PierHeader)), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
-	}
+
 }
 
 void tcp_connection::handle_read(const boost::system::error_code& err, size_t bytes_read)
@@ -73,7 +216,7 @@ void tcp_connection::handle_read(const boost::system::error_code& err, size_t by
 	{
 		// Apend buffer to string or something like that.
 	}
-
+	
 	// Keep receiving. 
 	sock.async_receive(buffer(recvbuf), std::bind(&tcp_connection::handle_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
 }
@@ -124,21 +267,37 @@ void tcp_connection::read_msg_handler(const boost::system::error_code& err, size
 		// Construct an iMessage.
 		iMessage msg(ts, memb_id, text, hash, chainhash);
 
-		mn->ReceiveHandler(this->channel, msg);
+		//mn->ReceiveHandler(ch, msg);
 
 	}
 
 }
 
-tcp_connection::tcp_connection(boost::asio::io_context& io, MainReceiveMessageInterface * mn) : io_(io), sock(io), mn(mn)
-{}
-
-
-
-PierListener::PierListener(boost::asio::io_context& io, MainReceiveMessageInterface * mn) : io_(io), acceptor(io, tcp::endpoint(tcp::v4(), default_listening_port))
+tcp_connection::tcp_connection(boost::asio::io_context& io, MainReceiveMessageInterface * _mn) : io_(io), sock(io)
 {
+	this->mn = _mn;
+}
+
+
+
+PierListener::PierListener(boost::asio::io_context& io, MainReceiveMessageInterface * _mn) : io_(io), acceptor(io, tcp::endpoint(tcp::v4(), default_listening_port)), wg(io.get_executor())
+{
+	syncing = false;
+	io_thread = std::thread([&]{ io_.run(); });
 	// Start accepting connections.
+	this->mn = _mn;
 	start_accept();
+}
+
+PierListener::~PierListener()
+{
+	wg.reset();
+	io_thread.join();
+}
+
+void PierListener::SetRunning(bool running)
+{
+	app_running = running;
 }
 
 void PierListener::start_accept()
@@ -155,6 +314,9 @@ void PierListener::handle_accept(tcp_connection::ptr new_conn, const boost::syst
 	}
 
 	// Continue accepting.
-	start_accept();
+	if (app_running)
+	{
+		start_accept();
+	}
 }
 

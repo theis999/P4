@@ -187,6 +187,7 @@
     <ClCompile Include="MainLogin.cpp" />
     <ClCompile Include="MainTest.cpp" />
     <ClCompile Include="Member.cpp" />
+    <ClCompile Include="NetworkTest.cpp" />
     <ClCompile Include="PierClient.cpp" />
     <ClCompile Include="PierListener.cpp" />
     <ClCompile Include="Protocol.cpp" />
@@ -210,6 +211,7 @@
     <ClInclude Include="Protocol.h" />
     <ClInclude Include="STDimport.h" />
     <ClInclude Include="Storage.h" />
+    <ClInclude Include="Tests.h" />
     <ClInclude Include="ThePierGUI.h" />
     <ClInclude Include="User.h" />
     <ClInclude Include="Uuid.h" />

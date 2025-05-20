@@ -186,6 +186,18 @@ Channel& Storage::GetCurrentChannel()
 	return channels.at(currentChannelIndex);
 }
 
+Channel& Storage::GetChannel(GUID guid)
+{
+	for (Channel& ch : this->channels)
+	{
+		if (ch.global_id == guid)
+		{
+			return ch;
+		}
+	}
+	throw "Channel doesn't exist";
+}
+
 void Storage::Save(string filename)
 {
 	if (channels.empty() || users.empty()) return; // prevent saving nothing

@@ -1,10 +1,11 @@
 #include "Main.h"
 #include "Storage.h"
 #include <wx/valtext.h>
+#include "Protocol.h"
 
 static Storage storage;
 
-Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(730, 325), wxDEFAULT_FRAME_STYLE | wxSYSTEM_MENU | wxTAB_TRAVERSAL)
+Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(730, 325), wxDEFAULT_FRAME_STYLE | wxSYSTEM_MENU | wxTAB_TRAVERSAL), main_listener(main_io, this)
 {
 	    wxTextValidator validator(wxFILTER_EXCLUDE_CHAR_LIST);
 		wxArrayString invalidChars;
@@ -13,11 +14,13 @@ Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(
 		invalidChars.Add(wxT("\n"));
 		validator.SetExcludes(invalidChars);
 		SendText->SetValidator(validator);
-		
 }
 
 void Main::OnAppClose(wxCloseEvent& event)
 {
+	main_listener.SetRunning(false);
+	main_io.stop();	
+
 	if (currentPassword != "") // prevent attempting save when not logged in
 		storage.Save("../data.txt");
 	event.Skip();
@@ -52,6 +55,13 @@ void Main::SendHandler(wxTextCtrl* sendtext)
 	storage.GetCurrentChannel().messages.push_back(m);
 	DisplayMsg(m);
 
+	// Send message via network in a separate thread, so program doesn't block.
+	std::thread send_thread([&]
+		{
+			PierProtocol::SendMSG(storage.GetCurrentChannel(), m, currentUser, storage);
+		});
+	send_thread.detach();
+
 	storage.AppendMessage(storage.GetCurrentChannel(), m);
 
 	sendtext->SetFocus();
@@ -60,6 +70,11 @@ void Main::SendHandler(wxTextCtrl* sendtext)
 Storage& Main::GetStorage()
 {
 	return storage;
+}
+
+User& Main::GetCurrentUser()
+{
+	return currentUser;
 }
 
 void Main::OnChannelsBox(wxCommandEvent& event)
@@ -109,9 +124,13 @@ bool Main::Login(User user, std::string password)
 	return true; // if storage can be opened 
 }
 
-void Main::ReceiveHandler(Channel *ch, iMessage msg)
-{
-	storage.AppendMessage(*ch, msg);
-	if (ch->channel_id != storage.GetCurrentChannel().channel_id) return;
+void Main::ReceiveHandler(Channel& ch, iMessage msg)
+{	
+	for(Channel& c : storage.channels)
+		if (c.channel_id == ch.channel_id)
+			c.messages.push_back(msg);
+
+	if (ch.channel_id != storage.GetCurrentChannel().channel_id) 
+		return;
 	DisplayMsg(msg);
 }

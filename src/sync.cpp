@@ -5,6 +5,8 @@
 #include <cstring>
 #include <sstream>
 #include "Storage.h"
+#include "Protocol.h"
+#include "MainReceiveMessageInterface.h"
 //Storage.h must be includd after wx/msgdlg.h, if not then the program won't compile and errors with a ton of syntax errors
 
 bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin) // returns true when successful
@@ -21,6 +23,8 @@ bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin) 
 		// REQUEST MESSAGES FROM peerOrigin
 
 		vector<iMessage> payload = {}; // !! MAKE THESE THE INCOMING MESSAGES !!
+
+
 
 		// DEBUG/TEST
 		extern Storage peerTestStorage;
@@ -113,13 +117,10 @@ Channel::syncOutput Channel::findOrigins(std::map<iMessage::shash, int>& hashMap
 };
 
 
-void Channel::sync()
+void Channel::sync(Member& memb, User &sender, Storage &storage)
 {
-
+	
 	//vector<iMessage::shash> peerHashes = {}; // TBD once function to get n peerHashes is implemented
-
-
-
 
 	std::map<iMessage::shash, int> hashMap = {};
 	int global_i = 0;
@@ -129,16 +130,16 @@ void Channel::sync()
 	while (1)
 	{
 
-		vector<iMessage::shash> peerHashes = {}; //FUNCTION TO GET n peerHashes
+		vector<iMessage::shash> peerHashes = PierProtocol::SendSHASHRequest(*this, memb, global_i, n, sender, storage);
 
 		// DEBUG/TEST
-		extern Storage peerTestStorage;
-		peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[5].hash);
-		peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[4].hash);
-		peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[3].hash);
-		peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[2].hash);
-		peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[1].hash);
-		peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[0].hash);
+		//extern Storage peerTestStorage;
+		//peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[5].hash);
+		//peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[4].hash);
+		//peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[3].hash);
+		//peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[2].hash);
+		//peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[1].hash);
+		//peerHashes.push_back(peerTestStorage.GetCurrentChannel().messages[0].hash);
 
 
 		// FUNCTION TO GET n clientHashes

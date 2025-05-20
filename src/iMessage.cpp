@@ -31,6 +31,49 @@ string iMessage::FormatToPrint(string user_name)
 	return std::format("{} {}: {}\n", string(timefmtstring), user_name, text);
 }
 
+std::string iMessage::to_sc_sep_str()
+{
+	std::string out;
+
+	// Append timestamp;
+	out.append(std::format("{};", this->timestamp));
+	// Append member id
+	out.append(std::format("{};", this->member_id)); // NEEDS TO BE A GUID
+	// Append hash
+	out.append(std::format("{};", *(reinterpret_cast<uint32_t*>(this->hash.data()))));
+	// Append chainhash
+	out.append(std::format("{};", *(reinterpret_cast<uint32_t*>(this->chainHash.data()))));
+	// Append text last.
+	out.append(this->text);
+
+	return out;
+}
+
+iMessage iMessage::from_str(std::string iMessageString)
+{
+	std::vector<std::string> iMsgFields{};
+	std::stringstream ss(iMessageString);
+	std::string field{0};
+	while (std::getline(ss, field, ';'))
+	{
+		iMsgFields.push_back(field);
+	}
+
+	time_t timestamp = stoi(iMsgFields[0]);
+	int memb_id = stoi(iMsgFields[1]); // Should be a GUID?
+	uint32_t h = stoul(iMsgFields[2]);
+	iMessage::shash hash = *(reinterpret_cast<iMessage::shash*>(&h));
+	h = stoul(iMsgFields[3]);
+	iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
+	std::string text = iMsgFields[4];
+	
+	// Construct an iMessage.
+	iMessage msg(timestamp, memb_id, text, hash, chainhash);
+
+	return msg;
+}
+
+
 bool iMessage::hasHash()
 {
 	return !hash.empty();
