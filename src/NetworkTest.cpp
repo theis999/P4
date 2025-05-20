@@ -3,6 +3,7 @@
 #include "Protocol.h"
 #include "Uuid.h"
 #include "Tests.h"
+#include "Signing.h"
 
 using namespace boost::asio;
 using boost::asio::ip::tcp;
@@ -17,8 +18,12 @@ void RunNetworkTest(MainReceiveMessageInterface *mn)
 
 	// Write a message to a channel:
 	std::time_t t;
-	iMessage msg(time(&t), 1 + mn->GetStorage().GetCurrentChannel().channel_id * 6 /* iMessage class needs to have GUIDS and not member_id */, "NetworkTest!");
+	string privkey = Signing::readFileToString(".\\key.pem");
+	string signature = Signing::signMessage(privkey, "NetworkTest!");
+
+	iMessage msg(time(&t), 1 /* iMessage class needs to have GUIDS and not member_id */, "NetworkTest!", signature);
 
 	PierProtocol::SendMSG(mn->GetStorage().GetCurrentChannel(), msg, mn->GetCurrentUser(), mn->GetStorage());
+
 
 }

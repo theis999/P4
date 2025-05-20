@@ -1,6 +1,7 @@
 #include "PierListener.h"
 #include "Protocol.h"
 #include <boost/bind.hpp>
+#include "Signing.h"
 
 using namespace boost::asio;
 using boost::asio::ip::tcp;
@@ -35,11 +36,40 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 			try
 			{
 				Channel& chan = storage.GetChannel(header.channel_GUID);
-				std::string msg_str(dynbuf, header.to_string().length(), std::string::npos);
-				iMessage msg = iMessage::from_str(msg_str);
+				std::stringstream ss(dynbuf);
+				std::vector<std::string> iMsgFields;
+				std::string field{};
 
-				mn->ReceiveHandler(chan, msg);
-				sock.shutdown(tcp::socket::shutdown_both);
+				// Skip header
+				for (size_t i = 0; i < 4; i++)
+				{
+					std::getline(ss, field, ';');
+
+				}
+
+				while (std::getline(ss, field, ';'))
+				{
+					iMsgFields.push_back(field);
+				}
+
+				time_t timestamp = stoi(iMsgFields[0]);
+				int memb_id = stoi(iMsgFields[1]); // Should be a GUID?
+				uint32_t h = stoul(iMsgFields[2]);
+				iMessage::shash hash = *(reinterpret_cast<iMessage::shash*>(&h));
+				h = stoul(iMsgFields[3]);
+				iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
+				std::string signature = iMsgFields[4];
+				std::string text = iMsgFields[5];
+				// Handle Signature verification
+				string pubkey = Signing::readFileToString(".\\key.public.pem");
+				bool verifySignature = Signing::oneStepVerifyMessage(pubkey.c_str(), signature.c_str(), text.c_str());
+				if (TRUE == verifySignature)
+				{
+					// Construct an iMessage.
+					iMessage msg(timestamp, memb_id, text, signature, hash, chainhash);
+
+					mn->ReceiveHandler(chan, msg);
+				}
 			}
 			catch (const std::exception&)
 			{
@@ -65,7 +95,13 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				iMessage::shash latest_shash = chan.messages.back().hash;
 				uint32_t loc_shash = *(reinterpret_cast<uint32_t*>(latest_shash.data()));
 
-				PierProtocol::PierHeader send_header(PierProtocol::SYNC_STATUS, mn->GetCurrentUser().unique_id, chan.global_id, 0);
+				PierProtocol::PierHeader send_header
+				{
+					.type = PierProtocol::SYNC_STATUS,
+					.sender_GUID = mn->GetCurrentUser().unique_id,
+					.channel_GUID = chan.global_id,
+					.size = 0,
+				};
 				std::string send{};
 
 				if (loc_shash == inc_shash)
@@ -84,11 +120,9 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 
 				async_write(sock, buffer(out), boost::asio::detached);
 				
-				PierListener::syncing = false;
 			}
 			catch (const std::exception&)
 			{
-				PierListener::syncing = false;
 				sock.close();
 				return;
 			}
@@ -125,7 +159,13 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 					clientHashes.push_back(chan.messages[i].hash);
 				}
 
-				PierProtocol::PierHeader send_header(PierProtocol::SHASH_MULTI, mn->GetCurrentUser().unique_id, chan.global_id, 0);
+				PierProtocol::PierHeader send_header =
+				{
+					.type = PierProtocol::SHASH_MULTI,
+					.sender_GUID = mn->GetCurrentUser().unique_id,
+					.channel_GUID = chan.global_id,
+					.size = 0,
+				};
 				std::string send;
 
 				for (auto& hash : clientHashes)
@@ -136,10 +176,7 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				send_header.size = send.length();
 				std::string out = send_header.to_string() + send;
 
-				async_write(sock, buffer(out), [&](const boost::system::error_code&, size_t)
-				{
-					sock.shutdown(tcp::socket::shutdown_both);
-				});
+				async_write(sock, buffer(out), boost::asio::detached);
 				
 			}
 			catch (const std::exception&)
@@ -189,8 +226,6 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				{
 					mn->ReceiveHandler(chan, msg);
 				}
-
-				sock.shutdown(tcp::socket::shutdown_both);
 			}
 			catch (const std::exception&)
 			{
@@ -265,7 +300,7 @@ void tcp_connection::read_msg_handler(const boost::system::error_code& err, size
 		std::string text(static_cast<const char *>(text_buf.data()), text_buf.size());
 
 		// Construct an iMessage.
-		iMessage msg(ts, memb_id, text, hash, chainhash);
+		iMessage msg(ts, memb_id, text, "SignaturePLACEHOLDER", hash, chainhash);
 
 		//mn->ReceiveHandler(ch, msg);
 

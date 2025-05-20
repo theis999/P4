@@ -191,6 +191,7 @@
     <ClCompile Include="PierClient.cpp" />
     <ClCompile Include="PierListener.cpp" />
     <ClCompile Include="Protocol.cpp" />
+    <ClCompile Include="Signing.cpp" />
     <ClCompile Include="sync.cpp" />
     <ClCompile Include="Storage.cpp" />
     <ClCompile Include="ThePierGUI.cpp" />
@@ -209,6 +210,7 @@
     <ClInclude Include="PierClient.h" />
     <ClInclude Include="PierListener.h" />
     <ClInclude Include="Protocol.h" />
+    <ClInclude Include="Signing.h" />
     <ClInclude Include="STDimport.h" />
     <ClInclude Include="Storage.h" />
     <ClInclude Include="Tests.h" />

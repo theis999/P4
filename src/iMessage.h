@@ -15,9 +15,9 @@ public:
 
 	};
 
-	iMessage(time_t timestamp, int member_id, string text);
-	iMessage(time_t timestamp, int member_id, string text, shash hash);
-	iMessage(time_t timestamp, int member_id, string text, shash hash, shash chainHash);
+	iMessage(time_t timestamp, int member_id, string text, string signature);
+	iMessage(time_t timestamp, int member_id, string text, string signature, shash hash);
+	iMessage(time_t timestamp, int member_id, string text, string signature, shash hash, shash chainhash);
 
 	string FormatToPrint(string user_name);
 
@@ -27,6 +27,7 @@ public:
 
 	shash hash;
 	shash chainHash; //missing implementation
+	string signature;
 
 	std::string to_sc_sep_str();
 	static iMessage from_str(std::string iMessageString);
