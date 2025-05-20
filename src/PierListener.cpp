@@ -35,33 +35,11 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 			try
 			{
 				Channel& chan = storage.GetChannel(header.channel_GUID);
-				std::stringstream ss(dynbuf);
-				std::vector<std::string> iMsgFields;
-				std::string field{};
-
-				// Skip header
-				for (size_t i = 0; i < 4; i++)
-				{
-					std::getline(ss, field, ';');
-
-				}
-
-				while (std::getline(ss, field, ';'))
-				{
-					iMsgFields.push_back(field);
-				}
-
-				time_t timestamp = stoi(iMsgFields[0]);
-				int memb_id = stoi(iMsgFields[1]); // Should be a GUID?
-				uint32_t h = stoul(iMsgFields[2]);
-				iMessage::shash hash = *(reinterpret_cast<iMessage::shash*>(&h));
-				h = stoul(iMsgFields[3]);
-				iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
-				std::string text = iMsgFields[4];
-				// Construct an iMessage.
-				iMessage msg(timestamp, memb_id, text, hash, chainhash);
+				std::string msg_str(dynbuf, header.to_string().length(), std::string::npos);
+				iMessage msg = iMessage::from_str(msg_str);
 
 				mn->ReceiveHandler(chan, msg);
+				sock.shutdown(tcp::socket::shutdown_both);
 			}
 			catch (const std::exception&)
 			{
@@ -158,7 +136,10 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				send_header.size = send.length();
 				std::string out = send_header.to_string() + send;
 
-				async_write(sock, buffer(out), boost::asio::detached);
+				async_write(sock, buffer(out), [&](const boost::system::error_code&, size_t)
+				{
+					sock.shutdown(tcp::socket::shutdown_both);
+				});
 				
 			}
 			catch (const std::exception&)
@@ -208,6 +189,8 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				{
 					mn->ReceiveHandler(chan, msg);
 				}
+
+				sock.shutdown(tcp::socket::shutdown_both);
 			}
 			catch (const std::exception&)
 			{

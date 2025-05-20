@@ -29,6 +29,7 @@ public:
 	shash chainHash; //missing implementation
 
 	std::string to_sc_sep_str();
+	static iMessage from_str(std::string iMessageString);
 	bool hasHash();
 	void computeHash();
 	bool operator==(const iMessage& rhs) const;
