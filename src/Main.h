@@ -8,6 +8,7 @@
 #include "MainLoginInterface.h"
 #include "MainReceiveMessageInterface.h"
 #include "Storage.h"
+#include <sstream>
 
 using std::to_string;
 
@@ -18,6 +19,10 @@ class Main : public ThePier, public MainLoginInterface, public MainReceiveMessag
 public:
 	User currentUser;
 	string currentPassword;
+
+	std::vector<unsigned char> encryption_key;
+	std::stringstream encryptPath;
+	std::stringstream encryptPathData;
 
 	Main();
 
@@ -42,7 +47,7 @@ public:
 	void UpdateLoginButtonLabel();
 	bool PromptLogin(std::string& outUsername);
 
-	void RunTest(wxCommandEvent& event);
+	//void RunTest(wxCommandEvent& event);
 
 	void OnAppClose(wxCloseEvent& event);
 };

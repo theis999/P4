@@ -1,5 +1,5 @@
-user;1;morten;7bbb84a3-8c69-47d6-9247-570df8e99d44
 user;0;theis;d60d633c-bd69-40f9-9745-ed0e324a7648
+user;1;morten;7bbb84a3-8c69-47d6-9247-570df8e99d44
 user;2;sebastian;6d9d7695-b9cb-4c98-a5bd-b2ec6f33dc7d
 user;3;christian;c33e7b39-848e-43cb-ac73-277d69aa46db
 user;4;kristian;f09876c3-2b82-43ea-a77d-da1aa8542b8a
@@ -18,7 +18,7 @@ membership;8;1;2;sebastian
 membership;9;1;3;christian
 membership;10;1;4;kristian
 membership;11;1;5;frederik
-channel;2;Bullies;8238255b-3611-411e-a50d-03fb57e39adf
+channel;2;Bullies;21326794-0773-4de1-8af6-653c8ceb168c
 membership;12;2;0;theis
 membership;13;2;1;morten
 membership;14;2;2;sebastian

@@ -1,6 +1,8 @@
 #include "Main.h"
 #include "Storage.h"
 #include <wx/valtext.h>
+#include "FileEncrypt.h"
+#include <filesystem>
 
 static Storage storage;
 
@@ -19,8 +21,13 @@ Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(
 void Main::OnAppClose(wxCloseEvent& event)
 {
 	if (currentPassword != "") // prevent attempting save when not logged in
-		storage.Save("../data.txt");
-	event.Skip();
+		if (!currentUser.name.empty())
+		{
+			std::string userDataFile = "data_" + currentUser.name + ".bin";
+			storage.Save(userDataFile);
+		}
+
+	event.Skip();	
 }
 
 void Main::OnSendTextChange(wxCommandEvent& event)
@@ -52,7 +59,7 @@ void Main::SendHandler(wxTextCtrl* sendtext)
 	storage.GetCurrentChannel().messages.push_back(m);
 	DisplayMsg(m);
 
-	storage.AppendMessage(storage.GetCurrentChannel(), m);
+	storage.AppendMessage(storage.GetCurrentChannel(), m, currentUser);
 
 	sendtext->SetFocus();
 }
@@ -91,7 +98,14 @@ void Main::DisplayMsg(iMessage& msg)
 
 bool Main::Login(User user, std::string password)
 {
-	storage.OpenStorage("../data.txt"); // expect the file to be located in the project root
+	this->currentUser = user;
+	this->currentPassword = password;
+
+	encryption_key.clear();
+	encryption_key = MakeKeyFromPassword(currentUser.name + currentPassword, currentUser.name);
+
+	std::string userDataFile = "data_" + currentUser.name + ".bin";
+	storage.OpenStorage(userDataFile, encryption_key, currentUser);
 	if (storage.channels.empty())
 	{
 		throw "Not implemented: storage failed to unlock the channels data due to password verification failure.";
@@ -104,14 +118,12 @@ bool Main::Login(User user, std::string password)
 	auto e = wxCommandEvent();
 	OnChannelsBox(e);
 
-	this->currentUser = user;
-	this->currentPassword = password;
 	return true; // if storage can be opened 
 }
 
 void Main::ReceiveHandler(Channel *ch, iMessage msg)
 {
-	storage.AppendMessage(*ch, msg);
+	storage.AppendMessage(*ch, msg, currentUser);
 	if (ch->channel_id != storage.GetCurrentChannel().channel_id) return;
 	DisplayMsg(msg);
 }
