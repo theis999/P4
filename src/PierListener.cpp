@@ -87,13 +87,7 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				iMessage::shash latest_shash = chan.messages.back().hash;
 				uint32_t loc_shash = *(reinterpret_cast<uint32_t*>(latest_shash.data()));
 
-				PierProtocol::PierHeader send_header
-				{
-					.type = PierProtocol::SYNC_STATUS,
-					.sender_GUID = mn->GetCurrentUser().unique_id,
-					.channel_GUID = chan.global_id,
-					.size = 0,
-				};
+				PierProtocol::PierHeader send_header(PierProtocol::SYNC_STATUS, mn->GetCurrentUser().unique_id, chan.global_id, 0);
 				std::string send{};
 
 				if (loc_shash == inc_shash)
@@ -112,9 +106,11 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 
 				async_write(sock, buffer(out), boost::asio::detached);
 				
+				PierListener::syncing = false;
 			}
 			catch (const std::exception&)
 			{
+				PierListener::syncing = false;
 				sock.close();
 				return;
 			}
@@ -151,13 +147,7 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 					clientHashes.push_back(chan.messages[i].hash);
 				}
 
-				PierProtocol::PierHeader send_header =
-				{
-					.type = PierProtocol::SHASH_MULTI,
-					.sender_GUID = mn->GetCurrentUser().unique_id,
-					.channel_GUID = chan.global_id,
-					.size = 0,
-				};
+				PierProtocol::PierHeader send_header(PierProtocol::SHASH_MULTI, mn->GetCurrentUser().unique_id, chan.global_id, 0);
 				std::string send;
 
 				for (auto& hash : clientHashes)
@@ -310,7 +300,7 @@ tcp_connection::tcp_connection(boost::asio::io_context& io, MainReceiveMessageIn
 PierListener::PierListener(boost::asio::io_context& io, MainReceiveMessageInterface * _mn) : io_(io), acceptor(io, tcp::endpoint(tcp::v4(), default_listening_port)), wg(io.get_executor())
 {
 	syncing = false;
-	io_thread = std::thread([=]{ io_.run(); });
+	io_thread = std::thread([&]{ io_.run(); });
 	// Start accepting connections.
 	this->mn = _mn;
 	start_accept();

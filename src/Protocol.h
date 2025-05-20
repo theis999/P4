@@ -35,15 +35,13 @@ struct PierHeader
     GUID channel_GUID;
     uint32_t size;
 
+    PierHeader(SendType type_, GUID sender_guid, GUID channel_guid, uint32_t size_);
+
     std::string to_string();
     static PierHeader from_string(std::string header);
 };
 
 std::string ip_str_from_bytes(std::byte ip[4]);
-
-std::array<char, 40> encode_header(PierHeader header);
-PierHeader decode_header(boost::asio::const_buffer header);
-
 
 
 class ProtocolHandler

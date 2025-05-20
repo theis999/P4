@@ -21,71 +21,13 @@ std::string PierProtocol::ip_str_from_bytes(std::byte ip[4])
     return ip_string;
 }
 
-std::array<char, 40> PierProtocol::encode_header(PierHeader header)
-{
-    
-    std::array<char, 40> out{0};
-    memcpy(out.data(), &(header.type), sizeof(SendType));
-    memcpy(out.data() + sizeof(SendType), &(header.sender_GUID), sizeof(GUID));
-    memcpy(out.data() + sizeof(SendType) + sizeof(GUID), &(header.channel_GUID), sizeof(GUID));
-    memcpy(out.data() + 2 * sizeof(GUID) + sizeof(SendType), &(header.size), sizeof(uint32_t));
-    
-    return out;
-}
-
-PierProtocol::PierHeader PierProtocol::decode_header(boost::asio::const_buffer header)
-{
-    char *buf = (char *)header.data();
-
-    SendType type;
-    GUID sender;
-    GUID channel;
-    uint32_t size;
-
-    memcpy(buf, &type, sizeof(SendType));
-    buf += sizeof(SendType);
-    memcpy(buf, &sender, sizeof(GUID));
-    buf += sizeof(GUID);
-    memcpy(buf, &channel, sizeof(GUID));
-    buf += sizeof(GUID);
-    memcpy(buf, &size, sizeof(uint32_t));
-
-    PierHeader out 
-    {
-        .type = type,
-        .sender_GUID = sender,
-        .channel_GUID = channel,
-        .size = size
-    };
-    
-    return out;
-}
-
 void PierProtocol::SendMSG(Channel &ch, iMessage msg, User &sender, Storage &storage)
 {
     std::vector<boost::asio::ip::tcp::endpoint> endpoints;
 
-    PierHeader header
-    {
-        .type = MESSAGE,
-        .sender_GUID = sender.unique_id,
-        .channel_GUID = ch.global_id,
-        .size = 0
-    };
-    
-    std::string send;
+    PierHeader header(MESSAGE, sender.unique_id, ch.global_id, 0);
 
-    // Append timestamp;
-    send.append(std::format("{};", msg.timestamp));
-    // Append member id
-    send.append(std::format("{};", msg.member_id)); // NEEDS TO BE A GUID
-    // Append hash
-    send.append(std::format("{};", *(reinterpret_cast<uint32_t*>(msg.hash.data()) )));
-    // Append chainhash
-    send.append(std::format("{};", *(reinterpret_cast<uint32_t*>(msg.chainHash.data()))));
-    // Append text last.
-    send.append(msg.text);
-    
+    std::string send = msg.to_sc_sep_str();
     header.size = send.length();
 
     std::string out = header.to_string();
@@ -108,28 +50,12 @@ void PierProtocol::SendMSGMulti(Channel& ch, Member memb, std::vector<iMessage> 
 {
     User& user = storage.users.at(memb.user_id);
 
-    PierHeader header =
-    {
-        .type = SendType::MESSAGE_MULTI,
-        .sender_GUID = sender.unique_id,
-        .channel_GUID = ch.global_id,
-        .size = 0
-    };
-
+    PierHeader header(MESSAGE_MULTI, sender.unique_id, ch.global_id, 0);
     std::string send;
 
     for (auto& msg : msgs)
     {
-        // Append timestamp;
-        send.append(std::format("{};", msg.timestamp));
-        // Append member id
-        send.append(std::format("{};", msg.member_id)); // NEEDS TO BE A GUID
-        // Append hash
-        send.append(std::format("{};", *(reinterpret_cast<uint32_t*>(msg.hash.data()))));
-        // Append chainhash
-        send.append(std::format("{};", *(reinterpret_cast<uint32_t*>(msg.chainHash.data()))));
-        // Append text last.
-        send.append(msg.text);
+        send.append(msg.to_sc_sep_str());
     }
     
     header.size = send.length();
@@ -150,14 +76,7 @@ void PierProtocol::SendSyncProbe(Channel &ch, iMessage::shash hash, User &sender
     std::string send;
     send.append(std::format("{};", *reinterpret_cast<uint32_t*>(hash.data())));
 
-    PierHeader header =
-    {
-        .type = SendType::SYNC_PROBE,
-        .sender_GUID = sender.unique_id,
-        .channel_GUID = ch.global_id,
-        .size = 0,
-    };
-
+    PierHeader header(SYNC_PROBE, sender.unique_id, ch.global_id, 0);
     header.size = send.length();
 
     std::string out = header.to_string();
@@ -201,14 +120,7 @@ void PierProtocol::SendSyncProbe(Channel &ch, iMessage::shash hash, User &sender
 void PierProtocol::SendSyncStatus(Channel& ch, Member memb, uint8_t flag, User& sender, Storage& storage)
 {
     std::string data_str = std::format("{}", flag);
-    PierHeader header =
-    {
-        .type = SendType::SYNC_STATUS,
-        .sender_GUID = sender.unique_id,
-        .channel_GUID = ch.global_id,
-        .size = 0,
-    };
-
+    PierHeader header(SendType::SYNC_STATUS, sender.unique_id, ch.global_id, 0);
     header.size = data_str.length();
     std::string out = header.to_string();
 
@@ -223,12 +135,7 @@ void PierProtocol::SendSyncStatus(Channel& ch, Member memb, uint8_t flag, User& 
 
 std::vector<iMessage::shash> PierProtocol::SendSHASHRequest(Channel& ch, Member memb, uint32_t global_i, uint32_t n, User& sender, Storage &storage)
 {
-    PierHeader header = {
-        .type = SHASH_REQUEST,
-        .sender_GUID = sender.unique_id,
-        .channel_GUID = ch.global_id,
-        .size = 0,
-    };
+    PierHeader header(SendType::SHASH_REQUEST, sender.unique_id, ch.global_id, 0);
 
     std::string send = std::format("{};{};", global_i, n);
     header.size = send.length();
@@ -250,15 +157,19 @@ std::vector<iMessage::shash> PierProtocol::SendSHASHRequest(Channel& ch, Member 
 
 
 
+PierProtocol::PierHeader::PierHeader(SendType type_, GUID sender_guid, GUID channel_guid, uint32_t size_)
+    : type(type_), sender_GUID(sender_guid), channel_GUID(channel_guid), size(size_)
+{
+
+}
+
 std::string PierProtocol::PierHeader::to_string()
 {
     std::string out{};
 
     out.append(std::format("{};", static_cast<uint64_t>(type)));
-    out.append(GuidToString(sender_GUID));
-    out.append(";");
-    out.append(GuidToString(channel_GUID));
-    out.append(";");
+    out.append(std::format("{};", GuidToString(sender_GUID)));
+    out.append(std::format("{};", GuidToString(channel_GUID)));
     out.append(std::format("{};", size));
 
     return out;
@@ -278,14 +189,12 @@ PierProtocol::PierHeader PierProtocol::PierHeader::from_string(std::string heade
         i++;
     }
 
-    PierHeader out
-    {
-        .type           = static_cast<SendType>(atoi(header_fields[0].c_str())),
-        .sender_GUID    = GuidFromString(header_fields[1]),
-        .channel_GUID   = GuidFromString(header_fields[2]),
-        .size           = static_cast<uint32_t>(atoi(header_fields[3].c_str())),
-       
-    };
+    PierHeader out(
+        static_cast<SendType>(atoi(header_fields[0].c_str())),
+        GuidFromString(header_fields[1]),
+        GuidFromString(header_fields[2]),
+        static_cast<uint32_t>(std::stoul(header_fields[3]))
+    );
     
     return out;
 }

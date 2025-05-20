@@ -31,6 +31,25 @@ string iMessage::FormatToPrint(string user_name)
 	return std::format("{} {}: {}\n", string(timefmtstring), user_name, text);
 }
 
+std::string iMessage::to_sc_sep_str()
+{
+	std::string out;
+
+	// Append timestamp;
+	out.append(std::format("{};", this->timestamp));
+	// Append member id
+	out.append(std::format("{};", this->member_id)); // NEEDS TO BE A GUID
+	// Append hash
+	out.append(std::format("{};", *(reinterpret_cast<uint32_t*>(this->hash.data()))));
+	// Append chainhash
+	out.append(std::format("{};", *(reinterpret_cast<uint32_t*>(this->chainHash.data()))));
+	// Append text last.
+	out.append(this->text);
+
+	return out;
+}
+
+
 bool iMessage::hasHash()
 {
 	return !hash.empty();
