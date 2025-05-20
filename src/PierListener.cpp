@@ -66,9 +66,9 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				if (TRUE == verifySignature)
 				{
 					// Construct an iMessage.
-					iMessage msg(timestamp, memb_id, text, hash, chainhash, signature);
+					iMessage msg(timestamp, memb_id, text, signature, hash, chainhash);
 
-					mn->ReceiveHandler(this->channel, msg);
+					mn->ReceiveHandler(chan, msg);
 				}
 			}
 			catch (const std::exception&)
@@ -300,7 +300,7 @@ void tcp_connection::read_msg_handler(const boost::system::error_code& err, size
 		std::string text(static_cast<const char *>(text_buf.data()), text_buf.size());
 
 		// Construct an iMessage.
-		iMessage msg(ts, memb_id, text, hash, chainhash);
+		iMessage msg(ts, memb_id, text, "SignaturePLACEHOLDER", hash, chainhash);
 
 		//mn->ReceiveHandler(ch, msg);
 

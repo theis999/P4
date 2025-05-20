@@ -12,20 +12,14 @@ iMessage::iMessage(time_t _timestamp, int _member_id, string _text, string _sign
 	computeHash();
 }
 
-/*iMessage::iMessage(time_t _timestamp, int _member_id, string _text, shash _hash) :
-	timestamp(_timestamp), member_id(_member_id), text(_text), hash(_hash)
-{
-	computeHash();
-}*/
-
-iMessage::iMessage(time_t _timestamp, int _member_id, string _text, shash _hash, shash _chainHash) :
-	timestamp(_timestamp), member_id(_member_id), text(_text), hash(_hash), chainHash(_chainHash)
+iMessage::iMessage(time_t _timestamp, int _member_id, string _text, string _signature, shash _hash) :
+	timestamp(_timestamp), member_id(_member_id), text(_text), signature(_signature), hash(_hash)
 {
 	computeHash();
 }
 
-iMessage::iMessage(time_t _timestamp, int _member_id, string _text, shash _hash, shash _chainHash, string _signature) :
-	timestamp(_timestamp), member_id(_member_id), text(_text), hash(_hash), chainHash(_chainHash), signature(_signature)
+iMessage::iMessage(time_t _timestamp, int _member_id, string _text, string _signature, shash _hash, shash _chainHash) :
+	timestamp(_timestamp), member_id(_member_id), text(_text), signature(_signature), hash(_hash), chainHash(_chainHash)
 {
 	computeHash();
 }

@@ -2,6 +2,7 @@
 #include "Storage.h"
 #include <wx/valtext.h>
 #include "Protocol.h"
+#include "Signing.h"
 
 static Storage storage;
 
@@ -51,8 +52,12 @@ void Main::SendHandler(wxTextCtrl* sendtext)
 	sendtext->Clear();
 	
 	auto& member = storage.GetCurrentChannel().GetMemberByUserId(currentUser.user_id);
-	auto m = iMessage(std::time(nullptr), member.member_id, text.ToStdString(), text.ToStdString());
-	storage.GetCurrentChannel().messages.push_back(m);
+
+	string privkey = Signing::readFileToString(".\\key.pem");
+	string signature = Signing::signMessage(privkey, text.ToStdString());
+
+	auto m = iMessage(std::time(nullptr), member.member_id, text.ToStdString(), signature);
+	storage.GetCurrentChannel().messages.emplace_back(m);
 	DisplayMsg(m);
 
 	// Send message via network in a separate thread, so program doesn't block.
@@ -128,7 +133,7 @@ void Main::ReceiveHandler(Channel& ch, iMessage msg)
 {	
 	for(Channel& c : storage.channels)
 		if (c.channel_id == ch.channel_id)
-			c.messages.push_back(msg);
+			c.messages.emplace_back(msg);
 
 	if (ch.channel_id != storage.GetCurrentChannel().channel_id) 
 		return;
