@@ -48,7 +48,7 @@ void Main::SendHandler(wxTextCtrl* sendtext)
 	sendtext->Clear();
 	
 	auto& member = storage.GetCurrentChannel().GetMemberByUserId(currentUser.user_id);
-	auto m = iMessage(std::time(nullptr), member.member_id, text.ToStdString());
+	auto m = iMessage(std::time(nullptr), member.member_id, text.ToStdString(), text.ToStdString());
 	storage.GetCurrentChannel().messages.push_back(m);
 	DisplayMsg(m);
 

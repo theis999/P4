@@ -179,7 +179,6 @@
     <Natvis Include="wxWidgets.natvis" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Nettest.cpp" />
     <ClCompile Include="cApp.cpp" />
     <ClCompile Include="Channel.cpp" />
     <ClCompile Include="iMessage.cpp" />
@@ -192,6 +191,7 @@
     <ClCompile Include="PierClient.cpp" />
     <ClCompile Include="PierListener.cpp" />
     <ClCompile Include="Protocol.cpp" />
+    <ClCompile Include="Signing.cpp" />
     <ClCompile Include="sync.cpp" />
     <ClCompile Include="Storage.cpp" />
     <ClCompile Include="ThePierGUI.cpp" />
@@ -199,7 +199,6 @@
     <ClCompile Include="Uuid.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Nettest.h" />
     <ClInclude Include="cApp.h" />
     <ClInclude Include="Channel.h" />
     <ClInclude Include="iMessage.h" />
@@ -211,6 +210,7 @@
     <ClInclude Include="PierClient.h" />
     <ClInclude Include="PierListener.h" />
     <ClInclude Include="Protocol.h" />
+    <ClInclude Include="Signing.h" />
     <ClInclude Include="STDimport.h" />
     <ClInclude Include="Storage.h" />
     <ClInclude Include="Tests.h" />

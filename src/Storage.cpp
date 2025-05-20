@@ -150,7 +150,7 @@ void Storage::OpenStorage(string filename)
 		while (read_segment(file, data) && data.size() > 1)
 		{
 			auto a = std::stoi(data[0]);
-			ch.messages.push_back(iMessage(std::stoi(data[0]), std::stoi(data[1]), data[2], string_to_hash(data[3])));
+			ch.messages.push_back(iMessage(std::stoi(data[0]), std::stoi(data[1]), data[2], data[3]));
 		}
 	}
 }

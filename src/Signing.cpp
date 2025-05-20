@@ -138,39 +138,44 @@ bool Signing::base64Decode(const std::string& b64input, unsigned char** buffer, 
 */
 
 
-RSA* Signing::createPublicRSA(const std::string& key) {
-    BIO* keybio = BIO_new_mem_buf((void*)key.c_str(), -1);
+EVP_PKEY* Signing::createPublicRSA(const std::string& key) {
+    BIO* keybio = BIO_new_mem_buf(key.c_str(), -1);
     if (!keybio) {
-        std::cerr << "Failed to create key BIO" << std::endl;
+        std::cerr << "Failed to create key BIO\n";
         return nullptr;
     }
 
-    RSA* rsa = PEM_read_bio_RSA_PUBKEY(keybio, NULL, NULL, NULL);
-    if (!rsa) {
-        std::cerr << "Failed to read RSA public key" << std::endl;
+    EVP_PKEY* pubKey = PEM_read_bio_PUBKEY(keybio, nullptr, nullptr, nullptr);
+    if (!pubKey) {
+        std::cerr << "Failed to read public key\n";
         ERR_print_errors_fp(stderr);
     }
 
     BIO_free(keybio);
-    return rsa;
+    return pubKey;
 }
 
-RSA* Signing::createPrivateRSA(const std::string& key) {
-    BIO* keybio = BIO_new_mem_buf((void*)key.c_str(), -1);
-    if (!keybio) {
-        std::cerr << "Failed to create key BIO" << std::endl;
+
+EVP_PKEY* Signing::createPrivateRSA(const std::string& key)
+{
+    BIO* keybio = BIO_new_mem_buf(key.c_str(), -1);
+    if (!keybio)
+    {
+        std::cerr << "Failed to create key BIO\n";
         return nullptr;
     }
 
-    RSA* rsa = PEM_read_bio_RSAPrivateKey(keybio, NULL, NULL, NULL);
-    if (!rsa) {
-        std::cerr << "Failed to read private RSA key" << std::endl;
+    EVP_PKEY* privKey = PEM_read_bio_PrivateKey(keybio, nullptr, nullptr, nullptr);
+    if (!privKey)
+    {
+        std::cerr << "Failed to read private key\n";
         ERR_print_errors_fp(stderr);
     }
 
     BIO_free(keybio);
-    return rsa;
+    return privKey;
 }
+
 
 /*
 ---------------------
@@ -178,77 +183,66 @@ RSA* Signing::createPrivateRSA(const std::string& key) {
 ---------------------
 */
 
-bool Signing::RSASign(RSA* rsa, const unsigned char* msg, size_t msgLen, unsigned char** encMsg, size_t* encMsgLen) {
+bool Signing::RSASign(EVP_PKEY* pkey, const unsigned char* msg, size_t msgLen, unsigned char** encMsg, size_t* encMsgLen) {
     EVP_MD_CTX* ctx = EVP_MD_CTX_new();
-    EVP_PKEY* priKey = EVP_PKEY_new();
-    EVP_PKEY_assign_RSA(priKey, rsa);
 
-    if (!ctx || EVP_DigestSignInit(ctx, NULL, EVP_sha256(), NULL, priKey) != 1) {
-    std::cerr << "EVP_DigestSignInit failed\n";
-    ERR_print_errors_fp(stderr);
-    EVP_PKEY_free(priKey);
-    return false;
+    if (!ctx || EVP_DigestSignInit(ctx, NULL, EVP_sha256(), NULL, pkey) != 1) {
+        std::cerr << "EVP_DigestSignInit failed\n";
+        ERR_print_errors_fp(stderr);
+        EVP_MD_CTX_free(ctx);
+        return false;
     }
 
     if (EVP_DigestSignUpdate(ctx, msg, msgLen) != 1) {
-    std::cerr << "EVP_DigestSignUpdate failed\n";
-    EVP_PKEY_free(priKey);
-    EVP_MD_CTX_free(ctx);
-    return false;
+        std::cerr << "EVP_DigestSignUpdate failed\n";
+        EVP_MD_CTX_free(ctx);
+        return false;
     }
 
     if (EVP_DigestSignFinal(ctx, NULL, encMsgLen) != 1) {
-    std::cerr << "EVP_DigestSignFinal (length) failed\n";
-    EVP_PKEY_free(priKey);
-    EVP_MD_CTX_free(ctx);
-    return false;
+        std::cerr << "EVP_DigestSignFinal (len) failed\n";
+        EVP_MD_CTX_free(ctx);
+        return false;
     }
 
     *encMsg = (unsigned char*)OPENSSL_malloc(*encMsgLen);
     if (EVP_DigestSignFinal(ctx, *encMsg, encMsgLen) != 1) {
-    std::cerr << "EVP_DigestSignFinal (data) failed\n";
-    EVP_PKEY_free(priKey);
-    EVP_MD_CTX_free(ctx);
-    OPENSSL_free(*encMsg);
-    return false;
+        std::cerr << "EVP_DigestSignFinal (sig) failed\n";
+        EVP_MD_CTX_free(ctx);
+        OPENSSL_free(*encMsg);
+        return false;
     }
 
-    EVP_PKEY_free(priKey);
     EVP_MD_CTX_free(ctx);
     return true;
 }
 
-std::string Signing::signMessage(const std::string& privateKey, const std::string& message) {
-    std::cout << "[signMessage] Parsing RSA key...\n";
-    RSA* privateRSA = createPrivateRSA(privateKey);
-    if (!privateRSA) {
-        std::cerr << "[signMessage] Failed to load RSA key.\n";
-        return "";
-    }
 
-    std::cout << "[signMessage] Performing signature...\n";
+std::string Signing::signMessage(const std::string& privateKey, const std::string& message)
+{
+    std::cout << "[signMessage] Loading private key...\n";
+    EVP_PKEY* pkey = createPrivateRSA(privateKey);
+    if (!pkey) return "";
+
+    std::cout << "[signMessage] Signing message...\n";
     unsigned char* signature = nullptr;
-    size_t signatureLen = 0;
+    size_t sigLen = 0;
 
-    if (!RSASign(privateRSA, reinterpret_cast<const unsigned char*>(message.c_str()), message.length(), &signature, &signatureLen)) {
-        std::cerr << "[signMessage] RSASign failed.\n";
-        RSA_free(privateRSA);
+    if (!RSASign(pkey, reinterpret_cast<const unsigned char*>(message.c_str()), message.length(), &signature, &sigLen))
+    {
+        std::cerr << "[signMessage] Signing failed.\n";
+        EVP_PKEY_free(pkey);
         return "";
     }
 
-    std::cout << "[signMessage] Signature complete. Length: " << signatureLen << "\n";
+    std::string encoded = base64Encode(signature, sigLen);
 
-    std::string encoded;
-    try {
-        std::cout << "[signMessage] Encoding to Base64...\n";
-        encoded = base64Encode(signature, signatureLen);
-        std::cout << "[signMessage] Encoding done.\n";
-    } catch (...) {
-        std::cerr << "[signMessage] Base64 encoding threw an exception!\n";
-        encoded = "";
-    }
+    OPENSSL_free(signature);
+    EVP_PKEY_free(pkey);
+
     return encoded;
 }
+
 
 
 /*
@@ -258,35 +252,30 @@ std::string Signing::signMessage(const std::string& privateKey, const std::strin
 */
 
 
-bool Signing::verifySignature(RSA* rsa, const unsigned char* signature, size_t sigLen, const char* msg, size_t msgLen, bool* isAuthentic) {
+bool Signing::verifySignature(EVP_PKEY* pkey, const unsigned char* signature, size_t sigLen, const char* msg, size_t msgLen, bool* isAuthentic) {
     *isAuthentic = false;
 
-    EVP_PKEY* pubKey = EVP_PKEY_new();
-    EVP_PKEY_assign_RSA(pubKey, rsa);
     EVP_MD_CTX* ctx = EVP_MD_CTX_new();
-
-    if (!ctx || EVP_DigestVerifyInit(ctx, NULL, EVP_sha256(), NULL, pubKey) != 1) {
-    std::cerr << "EVP_DigestVerifyInit failed\n";
-    ERR_print_errors_fp(stderr);
-    EVP_PKEY_free(pubKey);
-    return false;
+    if (!ctx || EVP_DigestVerifyInit(ctx, NULL, EVP_sha256(), NULL, pkey) != 1) {
+        std::cerr << "EVP_DigestVerifyInit failed\n";
+        ERR_print_errors_fp(stderr);
+        EVP_MD_CTX_free(ctx);
+        return false;
     }
 
     if (EVP_DigestVerifyUpdate(ctx, msg, msgLen) != 1) {
-    std::cerr << "EVP_DigestVerifyUpdate failed\n";
-    EVP_PKEY_free(pubKey);
-    EVP_MD_CTX_free(ctx);
-    return false;
+        std::cerr << "EVP_DigestVerifyUpdate failed\n";
+        EVP_MD_CTX_free(ctx);
+        return false;
     }
 
     int result = EVP_DigestVerifyFinal(ctx, signature, sigLen);
     *isAuthentic = (result == 1);
 
     EVP_MD_CTX_free(ctx);
-    EVP_PKEY_free(pubKey);
-
-    return (result == 1 || result == 0); // return false only if error
+    return (result == 1 || result == 0);
 }
+
 
 
 /*
@@ -299,30 +288,27 @@ bool Signing::verifySignature(RSA* rsa, const unsigned char* signature, size_t s
 bool Signing::oneStepVerifyMessage(const char* publickey, const char* signatureB64, const char* message) {
     if (!publickey || !signatureB64 || !message || 
         strlen(publickey) == 0 || strlen(signatureB64) == 0 || strlen(message) == 0) {
-        std::cerr << "[oneStepVerifyMessage] One or more inputs are null or empty.\n";
-        return 0;
+        std::cerr << "[oneStepVerifyMessage] Input is invalid.\n";
+        return false;
     }
 
-    
-    RSA* rsa = createPublicRSA(publickey);
-    if (!rsa) return 0;
-
+    EVP_PKEY* pkey = createPublicRSA(publickey);
+    if (!pkey) return false;
 
     unsigned char* decodedSig = nullptr;
     size_t decodedSigLen = 0;
 
-
     if (!base64Decode(signatureB64, &decodedSig, &decodedSigLen)) {
         std::cerr << "Failed to decode Base64 signature.\n";
-        RSA_free(rsa);
-        return 0;
+        EVP_PKEY_free(pkey);
+        return false;
     }
 
-
     bool authentic = false;
-    bool result = verifySignature(rsa, decodedSig, decodedSigLen, message, strlen(message), &authentic);
-
+    bool result = verifySignature(pkey, decodedSig, decodedSigLen, message, strlen(message), &authentic);
 
     OPENSSL_free(decodedSig);
-    return authentic; 
+    EVP_PKEY_free(pkey);
+
+    return result && authentic;
 }

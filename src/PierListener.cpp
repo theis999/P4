@@ -1,6 +1,7 @@
 #include "PierListener.h"
 #include "Protocol.h"
 #include <boost/bind.hpp>
+#include "Signing.h"
 
 using namespace boost::asio;
 using boost::asio::ip::tcp;
@@ -74,11 +75,20 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				iMessage::shash hash = *(reinterpret_cast<iMessage::shash*>(&h));
 				h = stoul(iMsgFields[3]);
 				iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
-				std::string text = iMsgFields[4];
-				// Construct an iMessage.
-				iMessage msg(timestamp, memb_id, text, hash, chainhash);
 				
-				mn->ReceiveHandler(this->channel, msg);
+				std::string signature = iMsgFields[4];
+				std::string text = iMsgFields[5];
+
+				// Handle Signature verification
+				string pubkey = Signing::readFileToString(".\\key.public.pem");
+				bool verifySignature = Signing::oneStepVerifyMessage(pubkey.c_str(), signature.c_str(), text.c_str());
+				if (TRUE == verifySignature)
+				{
+					// Construct an iMessage.
+					iMessage msg(timestamp, memb_id, text, hash, chainhash, signature);
+
+					mn->ReceiveHandler(this->channel, msg);
+				}
 				
 			}
 			default:

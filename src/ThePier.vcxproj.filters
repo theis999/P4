@@ -27,8 +27,8 @@
     <ClCompile Include="PierListener.cpp" />
     <ClCompile Include="Protocol.cpp" />
     <ClCompile Include="Uuid.cpp" />
-    <ClCompile Include="Nettest.cpp" />
     <ClCompile Include="NetworkTest.cpp" />
+    <ClCompile Include="Signing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ThePierGUI.h">
@@ -49,9 +49,9 @@
     <ClInclude Include="MainLoginInterface.h" />
     <ClInclude Include="MainReceiveMessageInterface.h" />
     <ClInclude Include="Uuid.h" />
-    <ClInclude Include="Nettest.h" />
     <ClInclude Include="Tests.h" />
-</ItemGroup>
+    <ClInclude Include="Signing.h" />
+  </ItemGroup>
   <ItemGroup>
     <Image Include="boat.ico" />
   </ItemGroup>

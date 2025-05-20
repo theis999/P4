@@ -4,21 +4,28 @@
 #include <sstream>
 #include <format>
 #include "time.h"
+#include "Signing.h"
 
-iMessage::iMessage(time_t _timestamp, int _member_id, string _text) :
-	timestamp(_timestamp), member_id(_member_id), text(_text)
+iMessage::iMessage(time_t _timestamp, int _member_id, string _text, string _signature) :
+	timestamp(_timestamp), member_id(_member_id), text(_text), signature(_signature)
 {
 	computeHash();
 }
 
-iMessage::iMessage(time_t _timestamp, int _member_id, string _text, shash _hash) :
+/*iMessage::iMessage(time_t _timestamp, int _member_id, string _text, shash _hash) :
 	timestamp(_timestamp), member_id(_member_id), text(_text), hash(_hash)
 {
 	computeHash();
-}
+}*/
 
 iMessage::iMessage(time_t _timestamp, int _member_id, string _text, shash _hash, shash _chainHash) :
 	timestamp(_timestamp), member_id(_member_id), text(_text), hash(_hash), chainHash(_chainHash)
+{
+	computeHash();
+}
+
+iMessage::iMessage(time_t _timestamp, int _member_id, string _text, shash _hash, shash _chainHash, string _signature) :
+	timestamp(_timestamp), member_id(_member_id), text(_text), hash(_hash), chainHash(_chainHash), signature(_signature)
 {
 	computeHash();
 }

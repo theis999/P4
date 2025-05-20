@@ -15,9 +15,10 @@ public:
 
 	};
 
-	iMessage(time_t timestamp, int member_id, string text);
-	iMessage(time_t timestamp, int member_id, string text, shash hash);
+	iMessage(time_t timestamp, int member_id, string text, string signature);
+	//iMessage(time_t timestamp, int member_id, string text, shash hash);
 	iMessage(time_t timestamp, int member_id, string text, shash hash, shash chainHash);
+	iMessage(time_t timestamp, int member_id, string text, shash hash, shash chainhash, string signature);
 
 	string FormatToPrint(string user_name);
 
@@ -27,6 +28,7 @@ public:
 
 	shash hash;
 	shash chainHash; //missing implementation
+	string signature;
 
 	bool hasHash();
 	void computeHash();
