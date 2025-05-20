@@ -9,6 +9,18 @@
 
 
 
+std::string PierProtocol::ip_str_from_bytes(std::byte ip[4])
+{
+    std::string ip_string = std::format("{}.{}.{}.{}",
+        std::to_integer<uint8_t>(ip[0]),
+        std::to_integer<uint8_t>(ip[1]),
+        std::to_integer<uint8_t>(ip[2]),
+        std::to_integer<uint8_t>(ip[3])
+    );
+    
+    return ip_string;
+}
+
 std::array<char, 40> PierProtocol::encode_header(PierHeader header)
 {
     
@@ -49,7 +61,7 @@ PierProtocol::PierHeader PierProtocol::decode_header(boost::asio::const_buffer h
     return out;
 }
 
-void PierProtocol::SendMSG(Channel ch, iMessage msg, User sender, Storage &storage)
+void PierProtocol::SendMSG(Channel &ch, iMessage msg, User &sender, Storage &storage)
 {
     std::vector<boost::asio::ip::tcp::endpoint> endpoints;
 
@@ -75,18 +87,6 @@ void PierProtocol::SendMSG(Channel ch, iMessage msg, User sender, Storage &stora
     send.append(msg.signature + ";");
     // Append text last.
     send.append(msg.text);
-
-    /* THESE ARE THE OLD NON-PLAINTEXT VERSIONS OF THE APPENDS */
-    /*
-    send.append(reinterpret_cast<const char*>(&(msg.timestamp)), sizeof(iMessage::timestamp));
-    
-    send.append(reinterpret_cast<const char*>(&(msg.member_id)), sizeof(iMessage::member_id));
-    
-    send.append(reinterpret_cast<const char*>(&(msg.hash)), sizeof(iMessage::hash));
-    
-    send.append(reinterpret_cast<const char*>(&(msg.chainHash)), sizeof(iMessage::chainHash));
-   
-    */
     
     header.size = send.length();
 
@@ -95,21 +95,162 @@ void PierProtocol::SendMSG(Channel ch, iMessage msg, User sender, Storage &stora
 
     for (auto& mem : ch.members)
     {
-        auto& user = storage.users.at(mem.second.user_id);
+        User& user = storage.users.at(mem.second.user_id);
 
-        std::string ip_string = std::format("{}.{}.{}.{}", 
-            static_cast<uint8_t>(user.IPv4[0]), 
-            static_cast<uint8_t>(user.IPv4[1]), 
-            static_cast<uint8_t>(user.IPv4[2]), 
-            static_cast<uint8_t>(user.IPv4[3])
-            );
-        endpoints.emplace_back(boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address("127.0.0.1"), 10000));
+        std::string ip_string = ip_str_from_bytes(user.IPv4);
+        endpoints.emplace_back(boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address(ip_string), 10000));
     }
 
-    PierClient::write_several_peers(endpoints, boost::asio::buffer(out));
+    PierClient::write_several_peers(endpoints, boost::asio::buffer(out), PierClient::ClientFlags::NO_ANSWER_EXPECTED);
     
   
 }
+
+void PierProtocol::SendMSGMulti(Channel& ch, Member memb, std::vector<iMessage> msgs, User& sender, Storage& storage)
+{
+    User& user = storage.users.at(memb.user_id);
+
+    PierHeader header =
+    {
+        .type = SendType::MESSAGE_MULTI,
+        .sender_GUID = sender.unique_id,
+        .channel_GUID = ch.global_id,
+        .size = 0
+    };
+
+    std::string send;
+
+    for (auto& msg : msgs)
+    {
+        // Append timestamp;
+        send.append(std::format("{};", msg.timestamp));
+        // Append member id
+        send.append(std::format("{};", msg.member_id)); // NEEDS TO BE A GUID
+        // Append hash
+        send.append(std::format("{};", *(reinterpret_cast<uint32_t*>(msg.hash.data()))));
+        // Append chainhash
+        send.append(std::format("{};", *(reinterpret_cast<uint32_t*>(msg.chainHash.data()))));
+        // Append text last.
+        send.append(msg.text);
+    }
+    
+    header.size = send.length();
+    std::string out = header.to_string();
+    out.append(send);
+
+    std::vector<boost::asio::ip::tcp::endpoint> endpoint{};
+    endpoint.emplace_back(boost::asio::ip::make_address(ip_str_from_bytes(user.IPv4)), 10000);
+
+    PierClient::write_several_peers(endpoint, boost::asio::buffer(out), PierClient::ClientFlags::NO_ANSWER_EXPECTED);
+
+}
+
+void PierProtocol::SendSyncProbe(Channel &ch, iMessage::shash hash, User &sender, Storage& storage)
+{
+   
+    // Prepare sync data in string format here.
+    std::string send;
+    send.append(std::format("{};", *reinterpret_cast<uint32_t*>(hash.data())));
+
+    PierHeader header =
+    {
+        .type = SendType::SYNC_PROBE,
+        .sender_GUID = sender.unique_id,
+        .channel_GUID = ch.global_id,
+        .size = 0,
+    };
+
+    header.size = send.length();
+
+    std::string out = header.to_string();
+    out.append(send);
+
+    boost::asio::io_context io;
+
+    std::vector<PierClient> clients{};
+
+    std::vector<Member> members;
+
+    for (auto& mem : ch.members)
+    {
+        User& user = storage.users.at(mem.second.user_id);
+        std::string ip_string = ip_str_from_bytes(user.IPv4);
+        clients.emplace_back(io, boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address(ip_string), 10000), std::to_underlying(PierClient::ClientFlags::EXPECTING_SYNC_ANSWER));
+        members.push_back(mem.second);
+    }
+
+    boost::asio::const_buffer outbuf = boost::asio::buffer(out);
+
+    auto memb_it = members.begin();
+
+    for (auto& c : clients)
+    {
+        memb_it++;
+        c.write(outbuf);
+        io.run_one(); // Send
+        io.run_one(); // Receive
+        
+        if (c.recvflag == 1)
+        {
+            ch.sync(*memb_it, sender, storage);
+        }
+    }
+
+    //PierClient::write_several_peers(endpoints, boost::asio::buffer(sync_data), PierClient::ClientFlags::EXPECTING_SYNC_ANSWER);
+
+}
+
+void PierProtocol::SendSyncStatus(Channel& ch, Member memb, uint8_t flag, User& sender, Storage& storage)
+{
+    std::string data_str = std::format("{}", flag);
+    PierHeader header =
+    {
+        .type = SendType::SYNC_STATUS,
+        .sender_GUID = sender.unique_id,
+        .channel_GUID = ch.global_id,
+        .size = 0,
+    };
+
+    header.size = data_str.length();
+    std::string out = header.to_string();
+
+    out.append(data_str);
+    
+    std::vector<tcp::endpoint> endpoint;
+    User& user = storage.users.at(memb.user_id);
+    endpoint.emplace_back(boost::asio::ip::make_address(ip_str_from_bytes(user.IPv4)), 10000);
+
+    PierClient::write_several_peers(endpoint, boost::asio::buffer(out), PierClient::ClientFlags::NO_ANSWER_EXPECTED);
+}
+
+std::vector<iMessage::shash> PierProtocol::SendSHASHRequest(Channel& ch, Member memb, uint32_t global_i, uint32_t n, User& sender, Storage &storage)
+{
+    PierHeader header = {
+        .type = SHASH_REQUEST,
+        .sender_GUID = sender.unique_id,
+        .channel_GUID = ch.global_id,
+        .size = 0,
+    };
+
+    std::string send = std::format("{};{};", global_i, n);
+    header.size = send.length();
+
+    std::string out = header.to_string() + send;
+
+    User& user = storage.users.at(memb.user_id);
+    
+    tcp::endpoint endpoint(boost::asio::ip::make_address(ip_str_from_bytes(user.IPv4)), 10000);
+
+    boost::asio::io_context io;
+    PierClient c(io, endpoint, std::to_underlying(PierClient::ClientFlags::EXPECTING_SHASH_ANSWER));
+    c.write(boost::asio::buffer(out));
+    io.run();
+
+    return c.recv_shashes;
+    
+}
+
+
 
 std::string PierProtocol::PierHeader::to_string()
 {
@@ -127,7 +268,6 @@ std::string PierProtocol::PierHeader::to_string()
 
 PierProtocol::PierHeader PierProtocol::PierHeader::from_string(std::string header)
 {
-    
     
     vector<std::string> header_fields;
 
@@ -148,6 +288,6 @@ PierProtocol::PierHeader PierProtocol::PierHeader::from_string(std::string heade
         .size           = static_cast<uint32_t>(atoi(header_fields[3].c_str())),
        
     };
-
+    
     return out;
 }

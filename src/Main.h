@@ -8,6 +8,7 @@
 #include "MainLoginInterface.h"
 #include "MainReceiveMessageInterface.h"
 #include "Storage.h"
+#include "Protocol.h"
 
 using std::to_string;
 
@@ -35,7 +36,7 @@ public:
 
 	bool Login(User user, string password);
 
-	void ReceiveHandler(Channel *ch, iMessage msg);
+	void ReceiveHandler(Channel& ch, iMessage msg);
 
 	void DoLogin();
 	void ClickCreateNewUser(wxCommandEvent& event);
@@ -46,4 +47,8 @@ public:
 	void RunTest(wxCommandEvent& event);
 
 	void OnAppClose(wxCloseEvent& event);
+
+private:
+	boost::asio::io_context main_io;
+	PierListener main_listener;
 };

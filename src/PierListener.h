@@ -24,7 +24,7 @@ public:
 
 	// Write data over the connection. The const_buffer must be valid while the write completes asynchronously.
 	void start_write(boost::asio::const_buffer data);
-
+	
 private:
 	tcp_connection(boost::asio::io_context& io, MainReceiveMessageInterface* _mn);
 
@@ -39,7 +39,7 @@ private:
 	
 	void read_msg_handler(const boost::system::error_code& err, size_t bytes_read);
 	
-	Channel *channel;
+
 	MainReceiveMessageInterface* mn = nullptr;
 	tcp::socket sock;
 	boost::asio::io_context& io_;
@@ -51,8 +51,12 @@ private:
 class PierListener
 {
 public:
+	static bool syncing;
 	PierListener(boost::asio::io_context& io, MainReceiveMessageInterface *_mn);
+	~PierListener();
 	static constexpr int default_listening_port = 10000;
+	void SetRunning(bool running);
+	
 
 private:
 	// Start accepting connections.
@@ -61,8 +65,12 @@ private:
 	// Handler function called after accept.
 	void handle_accept(tcp_connection::ptr new_conn, const boost::system::error_code& err);
 
+
+	bool app_running = true;
 	MainReceiveMessageInterface* mn;
+	std::thread io_thread;
 	boost::asio::io_context& io_;
+	boost::asio::executor_work_guard<decltype(io_.get_executor())> wg;
 	tcp::acceptor acceptor;
 };
 
