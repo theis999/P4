@@ -66,10 +66,11 @@ iMessage iMessage::from_str(std::string iMessageString)
 	iMessage::shash hash = *(reinterpret_cast<iMessage::shash*>(&h));
 	h = stoul(iMsgFields[3]);
 	iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
-	std::string text = iMsgFields[4];
+	std::string signature = iMsgFields[4];
+	std::string text = iMsgFields[5];
 	
 	// Construct an iMessage.
-	iMessage msg(timestamp, memb_id, text, hash, chainhash);
+	iMessage msg(timestamp, memb_id, text, signature, hash, chainhash);
 
 	return msg;
 }

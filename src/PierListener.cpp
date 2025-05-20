@@ -95,13 +95,13 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				iMessage::shash latest_shash = chan.messages.back().hash;
 				uint32_t loc_shash = *(reinterpret_cast<uint32_t*>(latest_shash.data()));
 
-				PierProtocol::PierHeader send_header
-				{
-					.type = PierProtocol::SYNC_STATUS,
-					.sender_GUID = mn->GetCurrentUser().unique_id,
-					.channel_GUID = chan.global_id,
-					.size = 0,
-				};
+				PierProtocol::PierHeader send_header(
+					PierProtocol::SendType::SYNC_STATUS,	// message type
+					mn->GetCurrentUser().unique_id,			// senderGUID
+					chan.global_id,							// channelGUID
+					0										// size
+				);
+
 				std::string send{};
 
 				if (loc_shash == inc_shash)
@@ -159,13 +159,12 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 					clientHashes.push_back(chan.messages[i].hash);
 				}
 
-				PierProtocol::PierHeader send_header =
-				{
-					.type = PierProtocol::SHASH_MULTI,
-					.sender_GUID = mn->GetCurrentUser().unique_id,
-					.channel_GUID = chan.global_id,
-					.size = 0,
-				};
+				PierProtocol::PierHeader send_header(
+					PierProtocol::SendType::SHASH_MULTI,
+					mn->GetCurrentUser().unique_id,
+					chan.global_id,
+					0
+				);
 				std::string send;
 
 				for (auto& hash : clientHashes)
@@ -194,7 +193,7 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				std::string field;
 				std::vector<iMessage> msgs;
 				std::stringstream ss(dynbuf);
-
+				
 				for (size_t i = 0; i < 4; i++) // Skip header
 				{
 					std::getline(ss, field, ';');
@@ -216,10 +215,13 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 					iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
 
 					std::getline(ss, field, ';');
+					std::string signature = field;
+
+					std::getline(ss, field, ';');
 					std::string text = field;
 
 					// Construct an iMessage.
-					msgs.emplace_back(timestamp, memb_id, text, hash, chainhash);
+					msgs.emplace_back(timestamp, memb_id, text, signature, hash, chainhash);
 				}
 
 				for (auto& msg : msgs)
