@@ -217,7 +217,7 @@ void Storage::OpenStorage(string filename, std::vector<unsigned char> encryption
 
 			if (parts.size() == 4)
 			{
-				ch.messages.emplace_back(std::stoi(parts[0]), std::stoi(parts[1]), parts[2], string_to_hash(parts[3]));
+				ch.messages.emplace_back(std::stoi(parts[0]), std::stoi(parts[1]), parts[2], "0", string_to_hash(parts[3]));
 			}
 		}
 	}

@@ -74,7 +74,6 @@ void Main::SendHandler(wxTextCtrl* sendtext)
 		});
 	send_thread.detach();
 
-	storage.AppendMessage(storage.GetCurrentChannel(), m);
 	storage.AppendMessage(storage.GetCurrentChannel(), m, currentUser);
 
 	sendtext->SetFocus();
