@@ -1,6 +1,7 @@
 #include "LoginController.h"
 #include <fstream>
 #include <string>
+#include "FileEncrypt.h"
 #include "Storage.h"
 
 LoginController::LoginController(LoginForm* loginForm, User* user, MainLoginInterface* main)
@@ -45,7 +46,7 @@ void LoginController::TryLogin(wxCommandEvent& event)
 
 		if (maybeUser.has_value() && password == "s")
 		{
-			m_loginForm->EndModal(wxID_OK);
+			m_loginForm->EndModal(wxID_OK);			
 			main->Login(maybeUser.value(), password);
 		}
 		else

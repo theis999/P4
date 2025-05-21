@@ -6,9 +6,11 @@
 static Storage testStorage;
 Storage peerTestStorage;
 
+/*
 void Main::RunTest(wxCommandEvent& event)
 {
 	// test code
+
 
 	testStorage.OpenStorage("../data.txt"); // expect the file to be located in the project root
 	peerTestStorage.OpenStorage("../data.txt");
@@ -37,7 +39,6 @@ void Main::RunTest(wxCommandEvent& event)
 	peerTestStorage.GetCurrentChannel().messages.push_back(testMessage4);
 	peerTestStorage.GetCurrentChannel().messages.push_back(testMessage5);
 
-	testStorage.GetCurrentChannel().sync();
-
+	testStorage.GetCurrentChannel().sync();	
 }
-
+*/

@@ -4,12 +4,12 @@
 #include <sstream>
 #include <filesystem>
 #include <iostream>
-#include <fstream>
-
+#include "FileEncrypt.h"
 #include "Uuid.h"
 #include "Storage.h"
+#include "wx/wx.h"
 
-static bool read_segment(std::ifstream& file, vector<string>& data)
+static bool read_segment(std::istream& file, vector<string>& data)
 {
 	string line;
 	string segment;
@@ -96,12 +96,62 @@ bool Storage::CreateUser(const User& user, const std::string& filepath)
 	return true;
 }
 
-void Storage::OpenStorage(string filename)
+void Storage::OpenStorage(string filename, std::vector<unsigned char> encryption_key, User currentUser)
 {
+	this->encryption_key = encryption_key;
 	//std::filesystem::path cwd = std::filesystem::current_path() / filename;
-	std::ifstream file;
-	file.open(filename);
-	auto is_open = file.is_open();
+	std::vector<std::string> decryptedLines;
+
+	// This if statement is for testing and the transition to the encrypted data files. 
+	// If the individual file doesn't exist, fallback to old data.txt - This functionionality can also be used if the channel access needs to be changed during testing. Ideally the system for managing channel access should manage this file.
+	if (!std::filesystem::exists(filename))
+	{
+		std::string fallbackPath = "../data.txt";
+		std::ifstream oldFile(fallbackPath);
+		if (!oldFile.is_open())
+		{
+			wxMessageBox("No existing user data file or old data.txt found.", "Error", wxOK | wxICON_ERROR);
+			return;
+		}
+
+		std::vector<std::string> oldDataLines;
+		std::string line;
+		while (std::getline(oldFile, line))
+		{
+			oldDataLines.push_back(line);
+		}
+		oldFile.close();
+
+		std::ofstream newUserFile(filename, std::ios::binary);
+		if (!newUserFile.is_open())
+		{
+			wxMessageBox("Failed to create user-specific encrypted file.", "File Error", wxOK | wxICON_ERROR);
+			return;
+		}
+		for (const auto& l : oldDataLines)
+		{
+			EncryptMessageGCM(l, encryption_key, newUserFile);
+		}
+		newUserFile.close();
+
+		decryptedLines = std::move(oldDataLines);
+		//return;
+	}
+	//This is the actual method for decrypting the file
+	else
+	{
+		if (!DecryptAllMessagesGCM(encryption_key, filename, decryptedLines))
+		{
+			HandleOpenSSLErrors();
+			return;
+		}
+	}
+
+	std::stringstream file;
+	for (const auto& line : decryptedLines)
+	{
+		file << line << "\n";
+	}
 
 	channels.clear(); users.clear();
 
@@ -142,43 +192,56 @@ void Storage::OpenStorage(string filename)
 
 	for (auto& ch : channels)
 	{
-		string filePath = "chat_history/" + ch.name + "messagedata.txt";
-		std::ifstream file(filePath);
+		string encFilePath = "chat_history/" + currentUser.name + "_" + ch.name + "messagedataEnc.bin";
 
-		if (!file) return;
-
-		while (read_segment(file, data) && data.size() > 1)
+		// If no file data file exists, create one, so the function doesn't fail
+		if (!std::filesystem::exists(encFilePath))
 		{
-			auto a = std::stoi(data[0]);
-			ch.messages.push_back(iMessage(std::stoi(data[0]), std::stoi(data[1]), data[2], string_to_hash(data[3])));
+			std::ofstream createEmpty(encFilePath, std::ios::binary);
+		}
+
+		std::vector<std::string> decryptedLines;
+		if (!DecryptAllMessagesGCM(this->encryption_key, encFilePath, decryptedLines))
+		{
+			HandleOpenSSLErrors();
+			continue;
+		}
+
+		for (auto& line : decryptedLines)
+		{
+			std::stringstream ss(line);
+			std::vector<std::string> parts;
+			std::string seg;
+			while (std::getline(ss, seg, ';'))
+				parts.push_back(seg);
+
+			if (parts.size() == 4)
+			{
+				ch.messages.emplace_back(std::stoi(parts[0]), std::stoi(parts[1]), parts[2], string_to_hash(parts[3]));
+			}
 		}
 	}
 }
 
-void Storage::AppendMessage(Channel c, iMessage msg)
+void Storage::AppendMessage(const Channel& c,const iMessage& msg,const User& currentUser)
 {
-	string filePath = "chat_history/" + c.name + "messagedata.txt";
+	std::string encFilePath = "chat_history/" + currentUser.name + "_" + c.name + "messagedataEnc.bin";
 
-	// 1) Read existing file content
-	std::fstream inFile(filePath, std::fstream::out | std::fstream::app | std::fstream::ate);
-	if (!inFile.is_open() && !inFile.good())
+	// Format the message line
+	std::stringstream ss;
+	ss << msg.timestamp << ';' << msg.member_id << ';' << msg.text << ';' << hash_to_string(msg.hash);
+
+	std::ofstream out(encFilePath, std::ios::binary | std::ios::app);
+	if (!out.is_open())
 	{
-		// If no file yet, we can just write everything
-		std::ofstream createFile(filePath, std::ios::out | std::ios::trunc);
-		if (!createFile)
-		{
-			//wxMessageBox("Failed to create chat history file", "Error");
-			return;
-		}
-		createFile << msg.timestamp << ";" << std::to_string(msg.member_id) << ";" << msg.text << ";" << hash_to_string(msg.hash) << std::endl;
-
-		createFile.close();
+		wxMessageBox("Unable to open encrypted history for appending.", "File Error", wxOK | wxICON_ERROR);
 		return;
 	}
 
-	inFile << msg.timestamp << ";" << std::to_string(msg.member_id) << ";" << msg.text << ";" << hash_to_string(msg.hash) << std::endl;
-	inFile.close();
-	return;
+	if (!EncryptMessageGCM(ss.str(), this->encryption_key, out))
+	{
+		wxMessageBox("Failed to encrypt and append message.", "Encryption Error", wxOK | wxICON_ERROR);
+	}
 }
 
 Channel& Storage::GetCurrentChannel()
@@ -189,9 +252,15 @@ Channel& Storage::GetCurrentChannel()
 void Storage::Save(string filename)
 {
 	if (channels.empty() || users.empty()) return; // prevent saving nothing
-	std::ofstream file(filename);
+	std::ofstream file(filename, std::ios::binary);
 	if (!file.is_open()) return;
-	file << ToFileString();
+
+	std::stringstream ss(ToFileString());
+	std::string line;
+	while (std::getline(ss, line))
+	{
+		EncryptMessageGCM(line, encryption_key, file);
+	}
 	file.close();
 }
 
@@ -209,5 +278,3 @@ string Storage::ToFileString()
 	}
 	return out.str();
 }
-
-

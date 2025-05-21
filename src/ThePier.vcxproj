@@ -181,6 +181,7 @@
   <ItemGroup>
     <ClCompile Include="cApp.cpp" />
     <ClCompile Include="Channel.cpp" />
+    <ClCompile Include="FileEncrypt.cpp" />
     <ClCompile Include="iMessage.cpp" />
     <ClCompile Include="LoginController.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -199,6 +200,7 @@
   <ItemGroup>
     <ClInclude Include="cApp.h" />
     <ClInclude Include="Channel.h" />
+    <ClInclude Include="FileEncrypt.h" />
     <ClInclude Include="iMessage.h" />
     <ClInclude Include="LoginController.h" />
     <ClInclude Include="Main.h" />

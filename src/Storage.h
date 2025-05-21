@@ -22,13 +22,13 @@ class Storage
 	};
 
 public:
-	Storage(){ }
+	std::vector<unsigned char> encryption_key; //Encryption key
 
 	static bool UserNameExists(const std::string& username, const std::string& filepath);
 	static bool CreateUser(const User& user, const std::string& filepath);
-	void OpenStorage(string filename);
+	void OpenStorage(string filename, std::vector<unsigned char> encryption_key, User currentUser);
 
-	void AppendMessage(Channel c, iMessage msg);
+	void AppendMessage(const Channel& c, const iMessage& msg, const User& currentUser);
 
 	vector<Channel> channels; // channels i am part of
 	vector<User> users; // users i know, which means they are a member of a channel i am a part of
