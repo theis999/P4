@@ -96,6 +96,15 @@ bool Storage::CreateUser(const User& user, const std::string& filepath)
 	return true;
 }
 
+bool Storage::CreateUserWithIP(const User& user, const std::string& filepath)
+{
+	std::fstream file(filepath, std::fstream::out | std::fstream::app | std::fstream::ate);
+	if (!file.is_open()) return false;
+	file << user.ToFileStringWithIP() << std::endl;
+	file.close();
+	return true;
+}
+
 void Storage::OpenStorage(string filename)
 {
 	//std::filesystem::path cwd = std::filesystem::current_path() / filename;

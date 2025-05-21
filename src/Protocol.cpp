@@ -9,7 +9,7 @@
 
 
 
-std::string PierProtocol::ip_str_from_bytes(std::byte ip[4])
+std::string PierProtocol::ip_str_from_bytes(const std::byte ip[4])
 {
     std::string ip_string = std::format("{}.{}.{}.{}",
         std::to_integer<uint8_t>(ip[0]),

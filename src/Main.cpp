@@ -15,6 +15,24 @@ Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(
 		invalidChars.Add(wxT("\n"));
 		validator.SetExcludes(invalidChars);
 		SendText->SetValidator(validator);
+		/* UGLY STINKY CODE */
+		for (User& usr : storage.users)
+		{
+			if (usr.name == "morten")
+			{
+				usr.IPv4[0] = std::byte{100};
+				usr.IPv4[1] = std::byte{121};
+				usr.IPv4[2] = std::byte{188};
+				usr.IPv4[3] = std::byte{116};
+			}
+			else if (usr.name == "christian")
+			{
+				usr.IPv4[0] = std::byte{100};
+				usr.IPv4[1] = std::byte{83};
+				usr.IPv4[2] = std::byte{138};
+				usr.IPv4[3] = std::byte{33};
+			}
+		}
 }
 
 void Main::OnAppClose(wxCloseEvent& event)

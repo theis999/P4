@@ -41,7 +41,7 @@ struct PierHeader
     static PierHeader from_string(std::string header);
 };
 
-std::string ip_str_from_bytes(std::byte ip[4]);
+std::string ip_str_from_bytes(const std::byte ip[4]);
 
 
 class ProtocolHandler

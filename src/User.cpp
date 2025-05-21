@@ -3,10 +3,11 @@
 #include <fstream>
 #include <algorithm>
 #include "Uuid.h"
+#include "Protocol.h"
 
 typedef GUID UUID;
 
-User::User(GUID unique_id, int user_id, string name): unique_id(unique_id), user_id(user_id), name(name) { }
+User::User(GUID unique_id, int user_id, string name) : unique_id(unique_id), user_id(user_id), name(name) { }
 User::User(GUID unique_id, int user_id, string name, std::byte public_key[]) : User(unique_id, user_id, name)
 {
 	for (int i = 0; i < 64; i++)
@@ -32,6 +33,13 @@ string User::ToFileString() const
 {
 	std::ostringstream ss;
 	ss << user_id << ";" << name << ";" << GuidToString(unique_id);
+	return ss.str();
+}
+
+string User::ToFileStringWithIP() const
+{
+	std::ostringstream ss;
+	ss << user_id << ";" << name << ";" << PierProtocol::ip_str_from_bytes(this->IPv4) << ";" << GuidToString(unique_id);
 	return ss.str();
 }
 

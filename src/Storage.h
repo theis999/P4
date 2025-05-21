@@ -26,6 +26,7 @@ public:
 
 	static bool UserNameExists(const std::string& username, const std::string& filepath);
 	static bool CreateUser(const User& user, const std::string& filepath);
+	static bool CreateUserWithIP(const User& user, const std::string& filepath);
 	void OpenStorage(string filename);
 
 	void AppendMessage(Channel c, iMessage msg);

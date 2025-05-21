@@ -35,6 +35,7 @@ public:
 	User(GUID unique_id, int user_id, string name, std::byte public_key[], std::byte IPv4[], vector<Channel> channels);
 
 	string ToFileString() const;
+	string ToFileStringWithIP() const;
 	void SaveToFile(const std::string& filepath) const;
 
 	static User CreateUser(string _name);
