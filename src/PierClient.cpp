@@ -20,9 +20,20 @@ PierClient::PierClient(io_context& io, tcp::endpoint endpoint, uint8_t flags) : 
 void PierClient::write(const_buffer data)
 {
 	// We sleep the thread and try again if not connected.
-	while (!connected) {}
+	
+	boost::asio::steady_timer t(io_, boost::asio::chrono::milliseconds(2000));
 
-	do_write(data);
+	t.async_wait([&](const boost::system::error_code&)
+		{
+			if (!connected)
+			{
+				return;
+			}
+			else
+			{
+				do_write(data);
+			}
+		});
 
 }
 
