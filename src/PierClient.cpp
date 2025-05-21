@@ -129,6 +129,23 @@ void PierClient::handle_read(const boost::system::error_code& err, size_t bytes_
 				}
 			}
 			break;
+		case PierClient::ClientFlags::EXPECTING_MULTIMSG_ANSWER:
+		{
+			std::stringstream ss(dynbuf);
+			std::string field;
+			for (size_t i = 0; i < 4; i++)
+			{
+				std::getline(ss, field, ';');
+			}
+
+			recv_messages.clear();
+
+			while (std::getline(ss, field)) //while (std::getline(ss, field, ';'))
+			{
+				recv_messages.push_back(iMessage::from_str(field));
+			}
+		}
+		break;
 		default:
 			// Ideally we don't get here.
 			break;

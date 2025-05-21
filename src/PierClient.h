@@ -14,7 +14,8 @@ public:
 	{
 		NO_ANSWER_EXPECTED = 0b00000000,
 		EXPECTING_SYNC_ANSWER = 0b00000001,
-		EXPECTING_SHASH_ANSWER = 0b00000010
+		EXPECTING_SHASH_ANSWER = 0b00000010,
+		EXPECTING_MULTIMSG_ANSWER = 0b00000011,
 	};
 
 	PierClient(io_context& io, tcp::endpoint endpoint);
@@ -31,6 +32,7 @@ public:
 	iMessage::shash get_received_shash();
 	uint8_t recvflag = 0;
 	std::vector<iMessage::shash> recv_shashes{};
+	std::vector<iMessage> recv_messages{};
 
 private:
 	void do_connect(const tcp::endpoint endpoint);

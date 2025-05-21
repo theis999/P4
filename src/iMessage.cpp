@@ -46,7 +46,7 @@ std::string iMessage::to_sc_sep_str()
 	// Append hash
 	out.append(std::format("{};", *(reinterpret_cast<uint32_t*>(this->hash.data()))));
 	// Append chainhash
-	out.append(std::format("{};", *(reinterpret_cast<uint32_t*>(this->chainHash.data()))));
+	out.append(std::format("{};\n", *(reinterpret_cast<uint32_t*>(this->chainHash.data()))));
 	// Append text last.
 	out.append(this->text);
 
@@ -84,9 +84,7 @@ bool iMessage::hasHash()
 	return !hash.empty();
 }
 
-
-
-static string hash_to_string2(iMessage::shash bytes)
+string iMessage::hash_to_string2(iMessage::shash bytes)
 {
 	char s[65];
 	for (int i = 0; i < 32; i++)

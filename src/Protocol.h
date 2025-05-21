@@ -53,7 +53,7 @@ private:
 };
 
 void SendMSG(Channel &ch, iMessage msg, User &sender, Storage &storage);
-void SendMSGRequest(Channel &ch, Member memb, iMessage::shash hash, User &sender, Storage& storage);
+std::vector<iMessage> SendMSGRequest(Channel &ch, Member memb, iMessage::shash hash, User &sender, Storage& storage);
 void SendMSGMulti(Channel &ch, Member memb, std::vector<iMessage> msgs, User &sender, Storage &storage);
 void SendSyncProbe(Channel &ch, iMessage::shash hash, User &sender, Storage &storage);
 void SendSyncStatus(Channel &ch, Member memb, uint8_t flag, User &sender, Storage& storage);

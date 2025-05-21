@@ -184,6 +184,59 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				return;
 			}
 		}
+		case PierProtocol::SendType::MESSAGE_REQUEST:
+		{
+			try
+			{
+				Channel& chan = storage.GetChannel(header.channel_GUID);
+				std::string field{};
+				std::stringstream ss(dynbuf);
+				std::vector<std::string> fields_vec{};
+
+				for (size_t i = 0; i < 4; i++) // Skip header
+				{
+					std::getline(ss, field, ';');
+				}
+				
+				std::getline(ss, field, ';');
+				auto s = iMessage::string_to_hash2(field);
+				
+
+
+				std::vector<iMessage> clientMessages{};
+				bool hashFound = false;
+
+				for (iMessage msg : chan.messages)
+				{
+					if (hashFound) clientMessages.push_back(msg);
+					else hashFound = (msg.chainHash == s);
+				}
+
+				PierProtocol::PierHeader send_header(
+					PierProtocol::SendType::SHASH_MULTI,
+					mn->GetCurrentUser().unique_id,
+					chan.global_id,
+					0
+				);
+				std::string send;
+
+				for (auto& msg : clientMessages)
+				{
+					send.append(std::format("{}", msg.to_sc_sep_str()));
+				}
+
+				send_header.size = send.length();
+				std::string out = send_header.to_string() + send;
+
+				async_write(sock, buffer(out), boost::asio::detached);
+
+			}
+			catch (const std::exception&)
+			{
+				sock.close();
+				return;
+			}
+		}
 		case PierProtocol::MESSAGE_MULTI:
 		{
 			try

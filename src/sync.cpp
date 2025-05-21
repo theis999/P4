@@ -9,7 +9,7 @@
 #include "MainReceiveMessageInterface.h"
 //Storage.h must be includd after wx/msgdlg.h, if not then the program won't compile and errors with a ton of syntax errors
 
-bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin) // returns true when successful
+bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin, Member& memb, User& sender, Storage& storage) // returns true when successful
 {
 	if (clientOrigin == 0)
 	{
@@ -22,31 +22,33 @@ bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin) 
 
 		// REQUEST MESSAGES FROM peerOrigin
 
-		vector<iMessage> payload = {}; // !! MAKE THESE THE INCOMING MESSAGES !!
-
+		//vector<iMessage> payload = {}; // !! MAKE THESE THE INCOMING MESSAGES !!
+		auto imsg = this->messages.end() - clientOrigin - 1;
+		auto& msg = *imsg;
+		vector<iMessage> payload = PierProtocol::SendMSGRequest(*this, memb, msg.chainHash, sender, storage);
 
 
 		// DEBUG/TEST
-		extern Storage peerTestStorage;
+		/*extern Storage peerTestStorage;
 		payload.push_back(peerTestStorage.GetCurrentChannel().messages[3]);
 		payload.push_back(peerTestStorage.GetCurrentChannel().messages[4]);
 		payload.push_back(peerTestStorage.GetCurrentChannel().messages[5]);
+		*/
 
 
-
-		// ADD MESSAGES TO OUR LIST
-		for (iMessage m : payload)
+		// ADD MESSAGES TO OUR LIST -- already done by receive handler
+		/*for (iMessage m : payload)
 		{
 			this->messages.push_back(m);
-		}
+		}*/
 
 		// HASHES SHOULD NOW MATCH
 		// if not then something major broke or transit failed
 		//bool x = std::equal(peerTestStorage.GetCurrentChannel().messages.begin(), peerTestStorage.GetCurrentChannel().messages.end(), this->messages.begin());
-		bool x = (peerTestStorage.GetCurrentChannel().messages == this->messages);
+		//bool x = (peerTestStorage.GetCurrentChannel().messages == this->messages);
 
 
-		return false;
+		return true;
 	}
 	else
 
@@ -59,7 +61,7 @@ bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin) 
 				payload.push_back(this->messages[i]);
 			}
 
-			// SEND payload TO PEER
+			//PierProtocol::SendMSGMulti(*this,memb, payload, sender, storage);
 
 			return true;
 
@@ -68,6 +70,39 @@ bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin) 
 		{
 
 			// REQUEST MESSAGES FROM peerOrigin
+			auto imsg = this->messages.end() - clientOrigin - 1;
+			auto& msg = *imsg;
+			vector<iMessage> peerMessages = PierProtocol::SendMSGRequest(*this, memb, msg.chainHash, sender, storage);
+			map<iMessage::shash, iMessage> map;
+			for (auto& m : peerMessages) map.insert({m.hash, m});
+
+			for (int i = this->messages.size() - clientOrigin; i < this->messages.size(); i++)
+			{
+				auto& m = this->messages[i];
+				map.insert({m.hash, m});
+			}
+
+
+			vector<iMessage> incoming_messages;
+			for (auto it = map.begin(); it != map.end(); ++it)
+			{
+				incoming_messages.push_back(it->second);
+			}
+
+			std::sort(incoming_messages.begin(), incoming_messages.end(), [](iMessage& a, iMessage& b)
+{
+	return a.timestamp < b.timestamp;
+ });
+
+			this->messages.erase(this->messages.end() - clientOrigin - 1);
+			for (iMessage msg : incoming_messages)
+			{
+				iMessage::shash tempShash = messages.back().chainHash;
+				msg.computeChainHash(tempShash);
+				messages.push_back(msg);
+
+			}
+
 			// SORT MESSAGES FROM clientOrigin with messages from peerOrigin
 			// 
 
@@ -162,7 +197,7 @@ void Channel::sync(Member& memb, User &sender, Storage &storage)
 
 	//wxMessageBox("Client Origin: " + std::to_string(clientOrigin)+ "   Peer Origin: " + std::to_string(peerOrigin), "!"); // DEBUG
 
-	resolveMessageConflictsByOrigin(clientOrigin, peerOrigin);
+	resolveMessageConflictsByOrigin(clientOrigin, peerOrigin,memb,sender,storage);
 
 
 

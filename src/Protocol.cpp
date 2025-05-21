@@ -155,6 +155,27 @@ std::vector<iMessage::shash> PierProtocol::SendSHASHRequest(Channel& ch, Member 
     
 }
 
+std::vector<iMessage> PierProtocol::SendMSGRequest(Channel& ch, Member memb, iMessage::shash hash, User& sender, Storage& storage)
+{
+    PierHeader header(SendType::MESSAGE_REQUEST, sender.unique_id, ch.global_id, 0);
+
+    std::string send = std::format("{};", iMessage::hash_to_string2(hash));
+    header.size = send.length();
+
+    std::string out = header.to_string() + send;
+
+    User& user = storage.users.at(memb.user_id);
+
+    tcp::endpoint endpoint(boost::asio::ip::make_address(ip_str_from_bytes(user.IPv4)), 10000);
+
+    boost::asio::io_context io;
+    PierClient c(io, endpoint, std::to_underlying(PierClient::ClientFlags::EXPECTING_MULTIMSG_ANSWER));
+    c.write(boost::asio::buffer(out));
+    io.run();
+
+    return c.recv_messages;
+
+}
 
 
 PierProtocol::PierHeader::PierHeader(SendType type_, GUID sender_guid, GUID channel_guid, uint32_t size_)

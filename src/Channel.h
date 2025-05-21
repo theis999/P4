@@ -39,7 +39,7 @@ public:
 
 	// Sync related functions, found in sync.ccp
 	void sync(Member& memb, User &sender, Storage &storage);
-	bool resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin);
+	bool resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin, Member& memb, User& sender, Storage& storage);
 	syncOutput findOrigins(std::map<iMessage::shash, int>& hashMap, vector<iMessage::shash> clientHashes, vector<iMessage::shash> peerHashes, int global_i);
 
 };

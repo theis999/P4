@@ -29,6 +29,7 @@ public:
 	shash chainHash; //missing implementation
 	string signature;
 
+	static string hash_to_string2(iMessage::shash bytes);
 	static shash string_to_hash2(string hexidecimal);
 
 	std::string to_sc_sep_str();
