@@ -21,19 +21,23 @@ void PierClient::write(const_buffer data)
 {
 	// We sleep the thread and try again if not connected.
 	
-	boost::asio::steady_timer t(io_, boost::asio::chrono::milliseconds(2000));
+	try
+	{
+		if (sock.remote_endpoint().address() == boost::asio::ip::make_address("0.0.0.0"))
+			return;
+	}
+	catch (const std::exception&)
+	{
+		return;
+	}
+	
 
-	t.async_wait([&](const boost::system::error_code&)
-		{
-			if (!connected)
-			{
-				return;
-			}
-			else
-			{
-				do_write(data);
-			}
-		});
+	if (!connected)
+		std::this_thread::sleep_for(std::chrono::seconds(2));
+	if (!connected)
+		return;
+		
+	do_write(data);
 
 }
 
@@ -82,7 +86,7 @@ void PierClient::do_connect(const tcp::endpoint endpoint)
 			// Try again if connect fails. Probably a bit scary to do this infinitely...
 			if (err)
 			{
-				do_connect(endpoint);
+				return;
 			}
 			else
 			{

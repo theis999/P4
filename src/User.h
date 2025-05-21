@@ -22,7 +22,7 @@ public:
 	string name; // default name for the user
 
 	std::byte public_key[64] = {};
-	std::byte IPv4[4] = {}; // sockaddr_storage might be better, https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms740504(v=vs.85)?redirectedfrom=MSDN
+	std::byte IPv4[4] = {std::byte{0}, std::byte{0}, std::byte{0}, std::byte{0}}; // sockaddr_storage might be better, https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms740504(v=vs.85)?redirectedfrom=MSDN
 
 	struct channel_membership : public pair<int, Channel> { };
 	vector<channel_membership> memberships{};
