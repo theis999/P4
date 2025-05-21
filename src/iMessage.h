@@ -29,9 +29,12 @@ public:
 	shash chainHash; //missing implementation
 	string signature;
 
+	static shash string_to_hash2(string hexidecimal);
+
 	std::string to_sc_sep_str();
 	static iMessage from_str(std::string iMessageString);
 	bool hasHash();
 	void computeHash();
+	void computeChainHash(iMessage::shash PreviousHash);
 	bool operator==(const iMessage& rhs) const;
 };

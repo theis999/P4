@@ -132,8 +132,20 @@ bool Main::Login(User user, std::string password)
 void Main::ReceiveHandler(Channel& ch, iMessage msg)
 {	
 	for(Channel& c : storage.channels)
-		if (c.channel_id == ch.channel_id)
+		if (c.channel_id == ch.channel_id) 
+		{
 			c.messages.emplace_back(msg);
+			if (c.messages.size() > 1)
+			{
+				iMessage::shash tempShash = (*(c.messages.end() - 2)).chainHash;
+				c.messages.back().computeChainHash(tempShash);
+			}
+			else
+			{
+				iMessage::shash tempXYZH = iMessage::string_to_hash2("");
+				c.messages.back().computeChainHash(tempXYZH);
+			}
+		}
 
 	if (ch.channel_id != storage.GetCurrentChannel().channel_id) 
 		return;

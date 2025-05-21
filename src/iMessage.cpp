@@ -5,6 +5,7 @@
 #include <format>
 #include "time.h"
 #include "Signing.h"
+#include "Storage.h"
 
 iMessage::iMessage(time_t _timestamp, int _member_id, string _text, string _signature) :
 	timestamp(_timestamp), member_id(_member_id), text(_text), signature(_signature)
@@ -31,6 +32,8 @@ string iMessage::FormatToPrint(string user_name)
 
 	return std::format("{} {}: {}\n", string(timefmtstring), user_name, text);
 }
+
+
 
 std::string iMessage::to_sc_sep_str()
 {
@@ -81,6 +84,38 @@ bool iMessage::hasHash()
 	return !hash.empty();
 }
 
+
+
+static string hash_to_string2(iMessage::shash bytes)
+{
+	char s[65];
+	for (int i = 0; i < 32; i++)
+	{
+		auto byte = (int)(bytes[i]);
+		auto a = (byte & 0xF0) >> 4;
+		auto b = byte & 0x0F;
+		s[i * 2] = (char)(a < 10 ? '0' + a : 'a' + a - 10);
+		s[i * 2 + 1] = (char)(b < 10 ? '0' + b : 'a' + b - 10);
+	}
+	s[64] = 0;
+	return s;
+}
+
+iMessage::shash iMessage::string_to_hash2(string hexidecimal)
+{
+	iMessage::shash out{};
+
+	auto in = hexidecimal.c_str();
+	for (int i = 0; i < 32; i++)
+	{
+		auto a = in[i * 2] < 'a' ? in[i * 2] - '0' : in[i * 2] - 'a' + 10;
+		auto b = in[i * 2 + 1] < 'a' ? in[i * 2 + 1] - '0' : in[i * 2 + 1] - 'a' + 10;
+		auto c = a << 4 | b;
+		out[i] = (std::byte)(c);
+	}
+	return out;
+}
+
 void iMessage::computeHash()
 {
 	unsigned char hash_buffer[SHA256_DIGEST_LENGTH];
@@ -93,6 +128,21 @@ void iMessage::computeHash()
 	// Compute hash and copy to hash
 	SHA256(reinterpret_cast<const unsigned char*>(data.c_str()), data.size(), hash_buffer);
 	std::memcpy(hash.data(), hash_buffer, SHA256_DIGEST_LENGTH);
+}
+
+void iMessage::computeChainHash(iMessage::shash PreviousHash)
+{
+	unsigned char hash_buffer[SHA256_DIGEST_LENGTH];
+
+	// Create a string combining timestamp, member_id, and text
+	std::ostringstream data_stream;
+	string PHtext = hash_to_string2(PreviousHash);
+	data_stream << timestamp << member_id << text << PHtext;
+	std::string data = data_stream.str();
+
+	// Compute hash and copy to hash
+	SHA256(reinterpret_cast<const unsigned char*>(data.c_str()), data.size(), hash_buffer);
+	std::memcpy(chainHash.data(), hash_buffer, SHA256_DIGEST_LENGTH);
 }
 
 bool iMessage::operator==(const iMessage& rhs) const
