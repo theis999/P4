@@ -20,13 +20,8 @@ PierClient::PierClient(io_context& io, tcp::endpoint endpoint, uint8_t flags) : 
 void PierClient::write(const_buffer data)
 {
 	// We sleep the thread and try again if not connected.
-	if (!connected)
-	{
-		// Probably needs other retry-solution. This could pause the program for a pretty long time.
-		std::this_thread::sleep_for(std::chrono::milliseconds(1));
-		write(data);
-		return;
-	}
+	while (!connected) {}
+
 	do_write(data);
 
 }

@@ -10,7 +10,19 @@ Storage peerTestStorage;
 
 void Main::RunTest(wxCommandEvent& event)
 {
-	this->GetStorage().GetCurrentChannel().sync();
+
+	Member m;
+
+	for (auto& memb : this->GetStorage().GetCurrentChannel().members)
+	{
+		if (memb.second.name == "morten")
+		{
+			m = memb.second;
+			break;
+		}
+	}
+
+	this->GetStorage().GetCurrentChannel().sync(m, currentUser, this->GetStorage());
 	
 	//std::thread t([&]{RunNetworkTest(this);});
 	//t.detach();
