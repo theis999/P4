@@ -187,6 +187,7 @@
     <ClCompile Include="MainLogin.cpp" />
     <ClCompile Include="MainTest.cpp" />
     <ClCompile Include="Member.cpp" />
+    <ClCompile Include="MessageEncryption.cpp" />
     <ClCompile Include="NetworkTest.cpp" />
     <ClCompile Include="PierClient.cpp" />
     <ClCompile Include="PierListener.cpp" />
@@ -207,6 +208,7 @@
     <ClInclude Include="MainLoginInterface.h" />
     <ClInclude Include="MainReceiveMessageInterface.h" />
     <ClInclude Include="Member.h" />
+    <ClInclude Include="MessageEncryption.h" />
     <ClInclude Include="PierClient.h" />
     <ClInclude Include="PierListener.h" />
     <ClInclude Include="Protocol.h" />

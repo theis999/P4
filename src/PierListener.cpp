@@ -2,6 +2,7 @@
 #include "Protocol.h"
 #include <boost/bind.hpp>
 #include "Signing.h"
+#include "MessageEncryption.h"
 
 using namespace boost::asio;
 using boost::asio::ip::tcp;
@@ -60,9 +61,13 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
 				std::string signature = iMsgFields[4];
 				std::string text = iMsgFields[5];
+
+				// Handle decryption before signature verification
+				string decText = MessageEncryption::decrypt_string(text, "SimplePasswordToKeepItSecure");
+
 				// Handle Signature verification
 				string pubkey = Signing::readFileToString(".\\key.public.pem");
-				bool verifySignature = Signing::oneStepVerifyMessage(pubkey.c_str(), signature.c_str(), text.c_str());
+				bool verifySignature = Signing::oneStepVerifyMessage(pubkey.c_str(), signature.c_str(), decText.c_str());
 				if (TRUE == verifySignature)
 				{
 					// Construct an iMessage.

@@ -29,6 +29,7 @@
     <ClCompile Include="Uuid.cpp" />
     <ClCompile Include="NetworkTest.cpp" />
     <ClCompile Include="Signing.cpp" />
+    <ClCompile Include="MessageEncryption.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ThePierGUI.h">
@@ -51,6 +52,7 @@
     <ClInclude Include="Uuid.h" />
     <ClInclude Include="Tests.h" />
     <ClInclude Include="Signing.h" />
+    <ClInclude Include="MessageEncryption.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="boat.ico" />

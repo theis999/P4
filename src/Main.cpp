@@ -3,6 +3,7 @@
 #include <wx/valtext.h>
 #include "Protocol.h"
 #include "Signing.h"
+#include "MessageEncryption.h"
 
 static Storage storage;
 
@@ -55,19 +56,21 @@ void Main::SendHandler(wxTextCtrl* sendtext)
 
 	string privkey = Signing::readFileToString(".\\key.pem");
 	string signature = Signing::signMessage(privkey, text.ToStdString());
+	string encmessage = MessageEncryption::encrypt_string(text.ToStdString(), "SimplePasswordToKeepItSecure");
 
-	auto m = iMessage(std::time(nullptr), member.member_id, text.ToStdString(), signature);
-	storage.GetCurrentChannel().messages.emplace_back(m);
-	DisplayMsg(m);
+	auto mStored = iMessage(std::time(nullptr), member.member_id, text.ToStdString(), signature);
+	auto mSent = iMessage(std::time(nullptr), member.member_id, encmessage, signature);
+	storage.GetCurrentChannel().messages.emplace_back(mStored);
+	DisplayMsg(mStored);
 
 	// Send message via network in a separate thread, so program doesn't block.
 	std::thread send_thread([&]
 		{
-			PierProtocol::SendMSG(storage.GetCurrentChannel(), m, currentUser, storage);
+			PierProtocol::SendMSG(storage.GetCurrentChannel(), mSent, currentUser, storage);
 		});
 	send_thread.detach();
 
-	storage.AppendMessage(storage.GetCurrentChannel(), m);
+	storage.AppendMessage(storage.GetCurrentChannel(), mStored);
 
 	sendtext->SetFocus();
 }
