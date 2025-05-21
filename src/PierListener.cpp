@@ -10,6 +10,7 @@ bool PierListener::syncing = false;
 
 void tcp_connection::start_receive()
 {
+	dynbuf.clear();
 	async_read(sock, dynamic_buffer(dynbuf), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
 }
 
@@ -22,7 +23,9 @@ void tcp_connection::start_write(const_buffer data)
 void tcp_connection::handle_first_read(const boost::system::error_code& err, size_t bytes_read)
 {
 
-	std::string header_string;
+	if (!bytes_read)
+		return;
+
 	PierProtocol::PierHeader header = PierProtocol::PierHeader::from_string(dynbuf);
 	std::string received( recvbuf.data() + header.to_string().length(), bytes_read - header.to_string().length());
 	Storage &storage = mn->GetStorage();
