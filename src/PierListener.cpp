@@ -371,6 +371,9 @@ void tcp_connection::read_msg_handler(const boost::system::error_code& err, size
 tcp_connection::tcp_connection(boost::asio::io_context& io, MainReceiveMessageInterface * _mn) : io_(io), sock(io)
 {
 	this->mn = _mn;
+	int32_t timeout_ms = 100000;
+	setsockopt(sock.native_handle(), SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_ms, sizeof(timeout_ms));
+	setsockopt(sock.native_handle(), SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout_ms, sizeof(timeout_ms));
 }
 
 

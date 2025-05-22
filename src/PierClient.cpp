@@ -8,11 +8,17 @@ using boost::asio::io_context;
 
 PierClient::PierClient(io_context& io, tcp::endpoint endpoint) : io_(io), sock(io)
 {
+	int32_t timeout_ms = 100000;
+	setsockopt(sock.native_handle(), SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_ms, sizeof(timeout_ms));
+	setsockopt(sock.native_handle(), SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout_ms, sizeof(timeout_ms));
 	do_connect(endpoint);
 }
 
 PierClient::PierClient(io_context& io, tcp::endpoint endpoint, uint8_t flags) : io_(io), sock(io)
-{
+{	
+	int32_t timeout_ms = 100000;
+	setsockopt(sock.native_handle(), SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_ms, sizeof(timeout_ms));
+	setsockopt(sock.native_handle(), SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout_ms, sizeof(timeout_ms));
 	flags_ = ClientFlags{flags};
 	do_connect(endpoint);
 }
@@ -98,8 +104,7 @@ void PierClient::do_connect(const tcp::endpoint endpoint)
 
 void PierClient::do_write(const_buffer data)
 {
-
-	async_write(sock, data, std::bind(&PierClient::handle_data_send, this, placeholders::error, placeholders::bytes_transferred));
+	boost::asio::async_write(sock, data, std::bind(&PierClient::handle_data_send, this, placeholders::error, placeholders::bytes_transferred));
 }
 
 void PierClient::handle_read(const boost::system::error_code& err, size_t bytes_read)

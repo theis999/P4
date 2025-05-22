@@ -7,8 +7,6 @@
 #include "Uuid.h"
 
 
-
-
 std::string PierProtocol::ip_str_from_bytes(const std::byte ip[4])
 {
     std::string ip_string = std::format("{}.{}.{}.{}",
@@ -31,17 +29,24 @@ void PierProtocol::SendMSG(Channel &ch, iMessage msg, User &sender, Storage &sto
     header.size = send.length();
 
     std::string out = header.to_string();
-    out.append(send);
+    out.append(send+";;");
 
     for (auto& mem : ch.members)
     {
         User& user = storage.users.at(mem.second.user_id);
+        /*
+        if (user.unique_id == sender.unique_id)
+            continue;
+        */
 
         std::string ip_string = ip_str_from_bytes(user.IPv4);
         endpoints.emplace_back(boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address(ip_string), 10000));
     }
+    
+    boost::asio::const_buffer buf = boost::asio::buffer(out);
+    //boost::asio::const_buffer buf = boost::asio::buffer(out);
 
-    PierClient::write_several_peers(endpoints, boost::asio::buffer(out), PierClient::ClientFlags::NO_ANSWER_EXPECTED);
+    PierClient::write_several_peers(endpoints, buf, PierClient::ClientFlags::NO_ANSWER_EXPECTED);
     
   
 }

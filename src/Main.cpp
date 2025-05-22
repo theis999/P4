@@ -121,6 +121,7 @@ bool Main::Login(User user, std::string password)
 	/* UGLY STINKY CODE */
 	for (User& usr : storage.users)
 	{
+		/*
 		if (usr.name == "morten")
 		{
 			usr.IPv4[0] = std::byte{100};
@@ -128,12 +129,13 @@ bool Main::Login(User user, std::string password)
 			usr.IPv4[2] = std::byte{188};
 			usr.IPv4[3] = std::byte{116};
 		}
-		else if (usr.name == "christian")
+		
+		else */if (usr.name == "christian")
 		{
 			usr.IPv4[0] = std::byte{100};
-			usr.IPv4[1] = std::byte{83};
-			usr.IPv4[2] = std::byte{138};
-			usr.IPv4[3] = std::byte{33};
+			usr.IPv4[1] = std::byte{103};
+			usr.IPv4[2] = std::byte{141};
+			usr.IPv4[3] = std::byte{24};
 		}
 	}
 
