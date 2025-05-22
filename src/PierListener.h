@@ -39,11 +39,11 @@ private:
 	
 	void read_msg_handler(const boost::system::error_code& err, size_t bytes_read);
 	
-
+	boost::asio::streambuf sb;
 	MainReceiveMessageInterface* mn = nullptr;
 	tcp::socket sock;
 	boost::asio::io_context& io_;
-	std::string dynbuf{};
+	std::string dynbuf;
 	std::array<char, 1024> recvbuf {0};
 
 };

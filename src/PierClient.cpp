@@ -160,6 +160,8 @@ void PierClient::handle_read(const boost::system::error_code& err, size_t bytes_
 			// Ideally we don't get here.
 			break;
 	}
+
+	sock.shutdown(tcp::socket::shutdown_both);
 }
 
 void PierClient::handle_data_send(const boost::system::error_code err, size_t bytes_sent)
@@ -167,5 +169,9 @@ void PierClient::handle_data_send(const boost::system::error_code err, size_t by
 	if (std::to_underlying(flags_))
 	{
 		async_read(sock, dynamic_buffer(dynbuf), std::bind(&PierClient::handle_read, this, placeholders::error, placeholders::bytes_transferred));
+	} 
+	else
+	{
+		sock.shutdown(tcp::socket::shutdown_both);
 	}
 }

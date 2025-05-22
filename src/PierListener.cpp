@@ -10,13 +10,12 @@ bool PierListener::syncing = false;
 
 void tcp_connection::start_receive()
 {
-	dynbuf.clear();
-	async_read(sock, dynamic_buffer(dynbuf), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
+	async_read(sock, sb, transfer_at_least(40), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
 }
 
 void tcp_connection::start_write(const_buffer data)
 {
-	sock.async_send(data, std::bind(&tcp_connection::handle_write, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
+	async_write(sock, data, std::bind(&tcp_connection::handle_write, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
 }
 
 // TODO: Get the read data out.
@@ -26,8 +25,10 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 	if (!bytes_read)
 		return;
 
-	PierProtocol::PierHeader header = PierProtocol::PierHeader::from_string(dynbuf);
-	std::string received( recvbuf.data() + header.to_string().length(), bytes_read - header.to_string().length());
+	auto bufs = sb.data();
+	std::string received(buffers_begin(bufs), buffers_begin(bufs) + sb.size());
+	PierProtocol::PierHeader header = PierProtocol::PierHeader::from_string(received);
+	//PierProtocol::PierHeader header = PierProtocol::PierHeader::from_string(dynbuf);
 	Storage &storage = mn->GetStorage();
 	
 	switch (header.type)
@@ -186,6 +187,7 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				sock.close();
 				return;
 			}
+			break;
 		}
 		case PierProtocol::SendType::MESSAGE_REQUEST:
 		{
@@ -289,7 +291,7 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 			{
 				sock.close();
 			}
-
+			break;
 		}
 		default:
 			// Invalid type, close socket.
