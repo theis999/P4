@@ -68,7 +68,8 @@ void PierProtocol::SendMSGMulti(Channel& ch, Member memb, std::vector<iMessage> 
     
     header.size = send.length();
     std::string out = header.to_string();
-    out.append(send);
+    out.append(send + ";;");
+    
 
     std::vector<boost::asio::ip::tcp::endpoint> endpoint{};
     endpoint.emplace_back(boost::asio::ip::make_address(ip_str_from_bytes(user.IPv4)), 10000);
@@ -88,7 +89,7 @@ void PierProtocol::SendSyncProbe(Channel &ch, iMessage::shash hash, User &sender
     header.size = send.length();
 
     std::string out = header.to_string();
-    out.append(send);
+    out.append(send + ";;");
 
     boost::asio::io_context io;
 
@@ -132,7 +133,7 @@ void PierProtocol::SendSyncStatus(Channel& ch, Member memb, uint8_t flag, User& 
     header.size = data_str.length();
     std::string out = header.to_string();
 
-    out.append(data_str);
+    out.append(data_str + ";;");
     
     std::vector<tcp::endpoint> endpoint;
     User& user = storage.users.at(memb.user_id);
@@ -148,7 +149,7 @@ std::vector<iMessage::shash> PierProtocol::SendSHASHRequest(Channel& ch, Member 
     std::string send = std::format("{};{};", global_i, n);
     header.size = send.length();
 
-    std::string out = header.to_string() + send;
+    std::string out = header.to_string() + send + ";;";
 
     User& user = storage.users.at(memb.user_id);
     
@@ -170,7 +171,7 @@ std::vector<iMessage> PierProtocol::SendMSGRequest(Channel& ch, Member memb, iMe
     std::string send = std::format("{};", iMessage::hash_to_string2(hash));
     header.size = send.length();
 
-    std::string out = header.to_string() + send;
+    std::string out = header.to_string() + send + ";;";
 
     User& user = storage.users.at(memb.user_id);
 

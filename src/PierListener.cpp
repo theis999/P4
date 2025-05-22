@@ -242,7 +242,7 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 			{
 				sock.close();
 				return;
-			}
+			}	
 		}
 		case PierProtocol::MESSAGE_MULTI:
 		{
@@ -261,6 +261,8 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 
 				while (std::getline(ss, field, ';'))
 				{
+					if (field == "" || field == ";")
+						break;
 					time_t timestamp = stoi(field);
 
 					std::getline(ss, field, ';');
