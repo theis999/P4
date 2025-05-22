@@ -1,6 +1,7 @@
 #include "PierListener.h"
 #include "Protocol.h"
 #include <boost/bind.hpp>
+#include <boost/regex.hpp>
 #include "Signing.h"
 
 using namespace boost::asio;
@@ -10,7 +11,7 @@ bool PierListener::syncing = false;
 
 void tcp_connection::start_receive()
 {
-	async_read(sock, sb, transfer_at_least(40), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
+	async_read_until(sock, sb, boost::regex(";;"), std::bind(&tcp_connection::handle_first_read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
 }
 
 void tcp_connection::start_write(const_buffer data)
@@ -67,7 +68,8 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				// Handle Signature verification
 				string pubkey = Signing::readFileToString(".\\key.public.pem");
 				bool verifySignature = Signing::oneStepVerifyMessage(pubkey.c_str(), signature.c_str(), text.c_str());
-				if (TRUE == verifySignature)
+				
+				//if (TRUE == verifySignature)
 				{
 					// Construct an iMessage.
 					iMessage msg(timestamp, memb_id, text, signature, hash, chainhash);
@@ -381,9 +383,9 @@ tcp_connection::tcp_connection(boost::asio::io_context& io, MainReceiveMessageIn
 PierListener::PierListener(boost::asio::io_context& io, MainReceiveMessageInterface * _mn) : io_(io), acceptor(io, tcp::endpoint(tcp::v4(), default_listening_port)), wg(io.get_executor())
 {
 	syncing = false;
-	io_thread = std::thread([&]{ io_.run(); });
-	// Start accepting connections.
+	io_thread	= std::thread([&]{ io_.run(); });
 	this->mn = _mn;
+	// Start accepting connections.
 	start_accept();
 }
 

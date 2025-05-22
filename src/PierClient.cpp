@@ -26,8 +26,8 @@ PierClient::PierClient(io_context& io, tcp::endpoint endpoint, uint8_t flags) : 
 void PierClient::write(const_buffer data)
 {
 	// We sleep the thread and try again if not connected.
-	
-	try
+	/*
+		try
 	{
 		if (sock.remote_endpoint().address() == boost::asio::ip::make_address("0.0.0.0"))
 			return;
@@ -42,6 +42,8 @@ void PierClient::write(const_buffer data)
 		std::this_thread::sleep_for(std::chrono::seconds(2));
 	if (!connected)
 		return;
+	*/
+
 		
 	do_write(data);
 
@@ -66,6 +68,13 @@ void PierClient::write_several_peers(std::vector<tcp::endpoint> endpoints, const
 	{
 		clients.emplace_back(io, peer, std::to_underlying(flags));
 		clients.back().write(data);
+	}
+
+	std::this_thread::sleep_for(std::chrono::seconds(1));
+
+	for (PierClient& c : clients)
+	{
+		c.write(data);
 	}
 	// Allow io.run() to return.
 	wg.reset();

@@ -40,7 +40,10 @@ void PierProtocol::SendMSG(Channel &ch, iMessage msg, User &sender, Storage &sto
         */
 
         std::string ip_string = ip_str_from_bytes(user.IPv4);
-        endpoints.emplace_back(boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address(ip_string), 10000));
+        if (ip_string != "0.0.0.0")
+        {
+            endpoints.emplace_back(boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address(ip_string), 10000));
+        }
     }
     
     boost::asio::const_buffer buf = boost::asio::buffer(out);
