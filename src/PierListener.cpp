@@ -40,8 +40,8 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 			try
 			{
 				Channel& chan = storage.GetChannel(header.channel_GUID);
-				std::stringstream ss(dynbuf);
-				std::vector<std::string> iMsgFields;
+				std::stringstream ss(received);
+				std::vector<std::string> iMsgFields{};
 				std::string field{};
 
 				// Skip header
