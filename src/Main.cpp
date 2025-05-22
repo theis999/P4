@@ -129,8 +129,15 @@ bool Main::Login(User user, std::string password)
 			usr.IPv4[2] = std::byte{188};
 			usr.IPv4[3] = std::byte{116};
 		}
-		
-		else */if (usr.name == "christian")
+		*/
+		if (usr.name == "kristian")
+		{
+			usr.IPv4[0] = std::byte{100};
+			usr.IPv4[1] = std::byte{95};
+			usr.IPv4[2] = std::byte{112};
+			usr.IPv4[3] = std::byte{100};
+		}
+		if (usr.name == "christian")
 		{
 			usr.IPv4[0] = std::byte{100};
 			usr.IPv4[1] = std::byte{103};
@@ -161,6 +168,7 @@ void Main::ReceiveHandler(Channel& ch, iMessage msg)
 			{
 				iMessage::shash tempShash = (*(c.messages.end() - 2)).chainHash;
 				c.messages.back().computeChainHash(tempShash);
+				storage.AppendMessage(c, msg);
 			}
 			else
 			{

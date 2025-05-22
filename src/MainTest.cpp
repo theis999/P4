@@ -1,4 +1,5 @@
 #include "Main.h"
+#include "MainReceiveMessageInterface.h"
 #include <wx/msgdlg.h>
 #include "Channel.h"
 #include "Storage.h"
@@ -10,19 +11,26 @@ Storage peerTestStorage;
 
 void Main::RunTest(wxCommandEvent& event)
 {
-
-	Member m;
-
-	for (auto& memb : this->GetStorage().GetCurrentChannel().members)
+	try
 	{
-		if (memb.second.name == "morten")
-		{
-			m = memb.second;
-			break;
-		}
-	}
+		Member m;
 
-	this->GetStorage().GetCurrentChannel().sync(m, currentUser, this->GetStorage());
+		for (auto& memb : this->GetStorage().GetCurrentChannel().members)
+		{
+			if (memb.second.name == "kristian")
+			{
+				m = memb.second;
+				break;
+			}
+		}
+
+		this->GetStorage().GetCurrentChannel().sync(m, currentUser, this->GetStorage());
+	}
+	catch (const std::exception&)
+	{
+		throw "haha hvad okay";
+	}
+	
 	
 	//std::thread t([&]{RunNetworkTest(this);});
 	//t.detach();

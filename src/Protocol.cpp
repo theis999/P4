@@ -34,10 +34,9 @@ void PierProtocol::SendMSG(Channel &ch, iMessage msg, User &sender, Storage &sto
     for (auto& mem : ch.members)
     {
         User& user = storage.users.at(mem.second.user_id);
-        /*
+        
         if (user.unique_id == sender.unique_id)
             continue;
-        */
 
         std::string ip_string = ip_str_from_bytes(user.IPv4);
         if (ip_string != "0.0.0.0")
@@ -157,6 +156,7 @@ std::vector<iMessage::shash> PierProtocol::SendSHASHRequest(Channel& ch, Member 
 
     boost::asio::io_context io;
     PierClient c(io, endpoint, std::to_underlying(PierClient::ClientFlags::EXPECTING_SHASH_ANSWER));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     c.write(boost::asio::buffer(out));
     io.run();
 

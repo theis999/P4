@@ -186,6 +186,6 @@ void PierClient::handle_data_send(const boost::system::error_code err, size_t by
 	} 
 	else
 	{
-		sock.shutdown(tcp::socket::shutdown_both);
+		//sock.shutdown(tcp::socket::shutdown_both);
 	}
 }

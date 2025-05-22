@@ -37,15 +37,15 @@ private:
 	// Handler function called after write.
 	void handle_write(const boost::system::error_code& err, size_t bytes_sent);
 	
+
+	void handle_shash_send(const boost::system::error_code& err, size_t bytes_sent);
 	void read_msg_handler(const boost::system::error_code& err, size_t bytes_read);
 	
 	boost::asio::streambuf sb;
 	MainReceiveMessageInterface* mn = nullptr;
 	tcp::socket sock;
 	boost::asio::io_context& io_;
-	std::string dynbuf;
-	std::array<char, 1024> recvbuf {0};
-
+	std::string send_string = "";
 };
 
 class PierListener

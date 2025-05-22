@@ -179,7 +179,7 @@ void Storage::AppendMessage(Channel c, iMessage msg)
 			//wxMessageBox("Failed to create chat history file", "Error");
 			return;
 		}
-		createFile << msg.timestamp << ";" << std::to_string(msg.member_id) << ";" << msg.text << ";" << hash_to_string(msg.hash) << std::endl;
+		createFile << msg.timestamp << ";" << std::to_string(msg.member_id) << ";" << msg.text << ";" << hash_to_string(msg.chainHash) << std::endl;
 
 		createFile.close();
 		return;

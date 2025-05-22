@@ -108,7 +108,7 @@ bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin, 
 
 		}
 
-	return true;
+	return true;	
 };
 
 Channel::syncOutput Channel::findOrigins(std::map<iMessage::shash, int>& hashMap, vector<iMessage::shash> clientHashes, vector<iMessage::shash> peerHashes, int global_i)
