@@ -179,6 +179,7 @@ std::vector<iMessage> PierProtocol::SendMSGRequest(Channel& ch, Member memb, iMe
 
     boost::asio::io_context io;
     PierClient c(io, endpoint, std::to_underlying(PierClient::ClientFlags::EXPECTING_MULTIMSG_ANSWER));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     c.write(boost::asio::buffer(out));
     io.run();
 
