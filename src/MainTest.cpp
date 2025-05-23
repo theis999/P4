@@ -17,7 +17,7 @@ void Main::RunTest(wxCommandEvent& event)
 
 		for (auto& memb : this->GetStorage().GetCurrentChannel().members)
 		{
-			if (memb.second.name == "kristian")
+			if (memb.second.name == "morten")
 			{
 				m = memb.second;
 				break;
