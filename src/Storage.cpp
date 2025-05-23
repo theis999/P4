@@ -160,6 +160,17 @@ void Storage::OpenStorage(string filename)
 		{
 			auto a = std::stoi(data[0]);
 			ch.messages.emplace_back(iMessage(std::stoi(data[0]), std::stoi(data[1]), data[2], data[3]));
+
+			if (ch.messages.size() > 1)
+			{
+				iMessage::shash tempShash = (*(ch.messages.end() - 2)).chainHash;
+				ch.messages.back().computeChainHash(tempShash);
+			}
+			else
+			{
+				iMessage::shash tempXYZH = iMessage::string_to_hash2("");
+				ch.messages.back().computeChainHash(tempXYZH);
+			}
 		}
 	}
 }
@@ -185,7 +196,7 @@ void Storage::AppendMessage(Channel c, iMessage msg)
 		return;
 	}
 
-	inFile << msg.timestamp << ";" << std::to_string(msg.member_id) << ";" << msg.text << ";" << hash_to_string(msg.hash) << std::endl;
+	inFile << msg.timestamp << ";" << std::to_string(msg.member_id) << ";" << msg.text << ";" << hash_to_string(msg.chainHash) << std::endl;
 	inFile.close();
 	return;
 }

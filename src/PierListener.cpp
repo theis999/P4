@@ -223,12 +223,14 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 
 				for (iMessage msg : chan.messages)
 				{
-					if (hashFound) clientMessages.push_back(msg);
-					else hashFound = (msg.chainHash == s);
+					if (hashFound) 
+						clientMessages.push_back(msg);
+					else 
+						hashFound = (msg.chainHash == s);
 				}
 
 				PierProtocol::PierHeader send_header(
-					PierProtocol::SendType::SHASH_MULTI,
+					PierProtocol::SendType::MESSAGE_MULTI,
 					mn->GetCurrentUser().unique_id,
 					chan.global_id,
 					0
@@ -254,6 +256,7 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				sock.close();
 				return;
 			}	
+			break;
 		}
 		case PierProtocol::MESSAGE_MULTI:
 		{
