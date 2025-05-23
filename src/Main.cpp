@@ -172,7 +172,7 @@ void Main::ReceiveHandler(Channel& ch, iMessage msg)
 			}
 			else
 			{
-				iMessage::shash tempXYZH = iMessage::string_to_hash2("");
+				iMessage::shash tempXYZH = {};
 				c.messages.back().computeChainHash(tempXYZH);
 			}
 		}

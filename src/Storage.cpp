@@ -168,7 +168,7 @@ void Storage::OpenStorage(string filename)
 			}
 			else
 			{
-				iMessage::shash tempXYZH = iMessage::string_to_hash2("");
+				iMessage::shash tempXYZH = {};
 				ch.messages.back().computeChainHash(tempXYZH);
 			}
 		}
