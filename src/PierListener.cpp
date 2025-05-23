@@ -96,7 +96,7 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				}
 
 				iMessage::shash inc_shash = iMessage::string_to_hash2(field);
-				iMessage::shash latest_shash = chan.messages.back().hash;
+				iMessage::shash latest_shash = chan.messages.back().chainHash;
 
 				PierProtocol::PierHeader send_header(
 					PierProtocol::SendType::SYNC_STATUS,	// message type
@@ -162,7 +162,7 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 
 				for (int i = chan.messages.size() - global_i - 1; i >= 0 && i >= chan.messages.size() - global_i - n; --i)
 				{
-					clientHashes.push_back(chan.messages[i].hash);
+					clientHashes.push_back(chan.messages[i].chainHash);
 				}
 
 				PierProtocol::PierHeader send_header(

@@ -189,7 +189,7 @@ void Channel::sync(Member& memb, User &sender, Storage &storage)
 
 		for (int i = this->messages.size() - global_i - 1; i >= 0 && i >= this->messages.size() - global_i - n; --i)
 		{
-			clientHashes.push_back(this->messages[i].hash);
+			clientHashes.push_back(this->messages[i].chainHash);
 		}
 
 		x = findOrigins(hashMap, clientHashes, peerHashes, global_i);
