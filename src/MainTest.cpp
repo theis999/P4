@@ -26,9 +26,10 @@ void Main::RunTest(wxCommandEvent& event)
 
 		this->GetStorage().GetCurrentChannel().sync(m, currentUser, this->GetStorage());
 	}
-	catch (const std::exception&)
+	catch (const std::exception& e)
 	{
-		throw "haha hvad okay";
+		return;
+		//throw "haha hvad okay";
 	}
 	
 	
