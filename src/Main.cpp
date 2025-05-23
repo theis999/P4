@@ -60,6 +60,18 @@ void Main::SendHandler(wxTextCtrl* sendtext)
 
 	auto m = iMessage(std::time(nullptr), member.member_id, text.ToStdString(), signature);
 	storage.GetCurrentChannel().messages.emplace_back(m);
+	auto& c = storage.GetCurrentChannel();
+	if (c.messages.size() > 1)
+	{
+		iMessage::shash tempShash = (*(c.messages.end() - 2)).chainHash;
+		c.messages.back().computeChainHash(tempShash);
+	}
+	else
+	{
+		iMessage::shash tempXYZH = {};
+		c.messages.back().computeChainHash(tempXYZH);
+	}
+	m.chainHash = c.messages.back().chainHash;
 	DisplayMsg(m);
 
 	// Send message via network in a separate thread, so program doesn't block.
