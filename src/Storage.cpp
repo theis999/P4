@@ -201,6 +201,19 @@ void Storage::AppendMessage(Channel c, iMessage msg)
 	return;
 }
 
+void Storage::OverwriteChannel(Channel c)
+{
+	string filePath = "chat_history/" + c.name + "messagedata.txt";
+	std::fstream inFile(filePath, std::fstream::out);
+
+	for (auto& msg : c.messages)
+	{
+		inFile << msg.timestamp << ";" << std::to_string(msg.member_id) << ";" << msg.text << ";" << hash_to_string(msg.chainHash) << std::endl;
+	}
+	inFile.close();
+	return;
+}
+
 Channel& Storage::GetCurrentChannel()
 {
 	return channels.at(currentChannelIndex);

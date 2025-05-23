@@ -169,7 +169,7 @@ void PierClient::handle_read(const boost::system::error_code& err, size_t bytes_
 			while (std::getline(ss, field)) //while (std::getline(ss, field, ';'))
 			{
 				recv_messages.push_back(iMessage::from_str(field));
-				mn->ReceiveHandler(mn->GetStorage().GetChannel(header.channel_GUID), recv_messages.back());
+				//mn->ReceiveHandler(mn->GetStorage().GetChannel(header.channel_GUID), recv_messages.back());
 			}
 		}
 		break;

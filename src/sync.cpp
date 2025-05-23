@@ -94,7 +94,7 @@ bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin, 
 	return a.timestamp < b.timestamp;
  });
 
-			this->messages.erase(this->messages.end() - clientOrigin - 1);
+			this->messages.erase(this->messages.end() - clientOrigin, this->messages.end());
 			for (iMessage msg : incoming_messages)
 			{
 				iMessage::shash tempShash = messages.back().chainHash;
@@ -102,6 +102,7 @@ bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin, 
 				messages.push_back(msg);
 
 			}
+			storage.OverwriteChannel(*this);
 
 			// SORT MESSAGES FROM clientOrigin with messages from peerOrigin
 			// 
@@ -192,8 +193,8 @@ void Channel::sync(Member& memb, User &sender, Storage &storage)
 		for (int i = this->messages.size() - global_i - 1; i >= 0 && i >= this->messages.size() - global_i - n; --i)
 		{
 			clientHashes.push_back(this->messages[i].chainHash);
-			hashesInString.push_back(iMessage::hash_to_string2(this->messages[i].hash));
-			chainhashesInString.push_back(iMessage::hash_to_string2(clientHashes.back()));
+			//hashesInString.push_back(iMessage::hash_to_string2(this->messages[i].hash)); For debugging to see hashes as strings
+			//chainhashesInString.push_back(iMessage::hash_to_string2(clientHashes.back()));
 		}
 
 		x = findOrigins(hashMap, clientHashes, peerHashes, global_i);
