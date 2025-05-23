@@ -181,12 +181,13 @@ void Main::ReceiveHandler(Channel& ch, iMessage msg)
 			{
 				iMessage::shash tempShash = (*(c.messages.end() - 2)).chainHash;
 				c.messages.back().computeChainHash(tempShash);
-				storage.AppendMessage(c, msg);
+				storage.AppendMessage(c, c.messages.back());
 			}
 			else
 			{
 				iMessage::shash tempXYZH = {};
 				c.messages.back().computeChainHash(tempXYZH);
+				storage.AppendMessage(c, c.messages.back());
 			}
 		}
 
