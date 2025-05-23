@@ -87,8 +87,7 @@ iMessage::shash PierClient::get_received_shash()
 	if (flags_ != ClientFlags::EXPECTING_SYNC_ANSWER)
 		return iMessage::shash();
 
-	uint32_t h = std::stoul(received_shash);
-	iMessage::shash hash = *(reinterpret_cast<iMessage::shash*>(&h));
+	iMessage::shash hash = iMessage::string_to_hash2(received_shash);
 
 	return hash;
 }

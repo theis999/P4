@@ -59,10 +59,8 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 
 				time_t timestamp = stoi(iMsgFields[0]);
 				int memb_id = stoi(iMsgFields[1]); // Should be a GUID?
-				uint32_t h = stoul(iMsgFields[2]);
-				iMessage::shash hash = *(reinterpret_cast<iMessage::shash*>(&h));
-				h = stoul(iMsgFields[3]);
-				iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
+				iMessage::shash hash = iMessage::string_to_hash2(iMsgFields[2]);
+				iMessage::shash chainhash = iMessage::string_to_hash2(iMsgFields[3]);
 				std::string signature = iMsgFields[4];
 				std::string initText = iMsgFields[5];
 
@@ -98,10 +96,8 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 					std::getline(ss, field, ';'); // Set field to be the shash
 				}
 
-				uint32_t inc_shash = std::stoul(field);
-
+				iMessage::shash inc_shash = iMessage::string_to_hash2(field);
 				iMessage::shash latest_shash = chan.messages.back().hash;
-				uint32_t loc_shash = *(reinterpret_cast<uint32_t*>(latest_shash.data()));
 
 				PierProtocol::PierHeader send_header(
 					PierProtocol::SendType::SYNC_STATUS,	// message type
@@ -112,7 +108,7 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 
 				std::string send{};
 
-				if (loc_shash == inc_shash)
+				if (latest_shash == inc_shash)
 					send.append(std::format("{};", 2 /* ALL IS WELL */));
 				else if (PierListener::syncing)
 					send.append(std::format("{}", 0 /* ALREADY SYNCING - DENIED */));
@@ -283,12 +279,10 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 					int memb_id = stoi(field); // Should be a GUID?
 
 					std::getline(ss, field, ';');
-					uint32_t h = stoul(field);
-					iMessage::shash hash = *(reinterpret_cast<iMessage::shash*>(&h));
+					iMessage::shash hash = iMessage::string_to_hash2(field);
 
 					std::getline(ss, field, ';');
-					h = stoul(field);
-					iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
+					iMessage::shash chainhash = iMessage::string_to_hash2(field);
 
 					std::getline(ss, field, ';');
 					std::string signature = field;

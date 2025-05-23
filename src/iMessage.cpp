@@ -44,9 +44,9 @@ std::string iMessage::to_sc_sep_str()
 	// Append member id
 	out.append(std::format("{};", this->member_id)); // NEEDS TO BE A GUID
 	// Append hash
-	out.append(std::format("{};", *(reinterpret_cast<uint32_t*>(this->hash.data()))));
+	out.append(std::format("{};", iMessage::hash_to_string2(this->hash)));
 	// Append chainhash
-	out.append(std::format("{};", *(reinterpret_cast<uint32_t*>(this->chainHash.data()))));
+	out.append(std::format("{};", iMessage::hash_to_string2(this->chainHash)));
 	// Append signature.
 	out.append(std::format("{};\n", this->signature));
 	// Append text last.
@@ -67,10 +67,8 @@ iMessage iMessage::from_str(std::string iMessageString)
 
 	time_t timestamp = stoi(iMsgFields[0]);
 	int memb_id = stoi(iMsgFields[1]); // Should be a GUID?
-	uint32_t h = stoul(iMsgFields[2]);
-	iMessage::shash hash = *(reinterpret_cast<iMessage::shash*>(&h));
-	h = stoul(iMsgFields[3]);
-	iMessage::shash chainhash = *(reinterpret_cast<iMessage::shash*>(&h));
+	iMessage::shash hash = iMessage::string_to_hash2(iMsgFields[2]);
+	iMessage::shash chainhash = iMessage::string_to_hash2(iMsgFields[3]);
 	std::string signature = iMsgFields[4];
 	std::string text = iMsgFields[5];
 	

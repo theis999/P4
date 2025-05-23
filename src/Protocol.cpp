@@ -82,7 +82,7 @@ void PierProtocol::SendSyncProbe(Channel &ch, iMessage::shash hash, User &sender
    
     // Prepare sync data in string format here.
     std::string send;
-    send.append(std::format("{};", *reinterpret_cast<uint32_t*>(hash.data())));
+    send.append(std::format("{};", iMessage::hash_to_string2(hash)));
 
     PierHeader header(SYNC_PROBE, sender.unique_id, ch.global_id, 0);
     header.size = send.length();
