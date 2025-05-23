@@ -1,8 +1,9 @@
 #pragma once
-#include "Channel.h"
-#include "iMessage.h"
 
-#include "Storage.h"
+class Channel;
+class User;
+class Storage;
+class iMessage;
 class MainReceiveMessageInterface
 {
 public:

@@ -1,9 +1,11 @@
 #pragma once
 
+#include "MainReceiveMessageInterface.h"
 #include "STDimport.h"
 #include "Channel.h"
 #include "User.h"
 #include "iMessage.h"
+
 
 /// <summary>
 /// Container for all data in std format
@@ -38,6 +40,7 @@ public:
 	int currentChannelIndex = 0;
 	Channel& GetCurrentChannel();
 	Channel& GetChannel(GUID guid);
+	MainReceiveMessageInterface* mn = nullptr;
 
 	void Save(string filename); //Save the data file of the current user
 	string ToFileString();
