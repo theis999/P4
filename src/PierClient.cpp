@@ -148,8 +148,7 @@ void PierClient::handle_read(const boost::system::error_code& err, size_t bytes_
 
 				while (std::getline(ss, field, ';'))
 				{
-					uint32_t h = stoul(field);
-					recv_shashes.push_back(*(reinterpret_cast<iMessage::shash*>(&h)));
+					recv_shashes.push_back(iMessage::string_to_hash2(field));
 				}
 			}
 			break;

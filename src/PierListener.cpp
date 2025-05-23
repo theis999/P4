@@ -180,7 +180,7 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 
 				for (auto& hash : clientHashes)
 				{
-					send.append(std::format("{};", *reinterpret_cast<uint32_t*>(hash.data())));
+					send.append(std::format("{};", iMessage::hash_to_string2(hash)));
 				}
 
 				send_header.size = send.length();

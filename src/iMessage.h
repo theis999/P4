@@ -12,7 +12,13 @@ class iMessage
 public:
 	struct shash : public array<std::byte, 32>
 	{
-
+		bool operator<(const shash & rhs) const
+		{
+			for (int i = 0; i < 32; i++) 
+				if (this->at(i) != rhs.at(i)) 
+					return this->at(i) < rhs.at(i);
+			return false;
+		}
 	};
 
 	iMessage(time_t timestamp, int member_id, string text, string signature);

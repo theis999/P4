@@ -135,6 +135,13 @@ Channel::syncOutput Channel::findOrigins(std::map<iMessage::shash, int>& hashMap
 
 		if (local_i < sizePeerHashes)
 		{
+			/*if (hashMap.contains(peerHashes[local_i]))
+			{
+				peerOrigin = local_i + global_i;
+				auto& [key, value] = *hashMap.find(peerHashes[local_i]); // grab key and value, from the pair where insert failed
+				clientOrigin = value;
+				return syncOutput(true, clientOrigin, peerOrigin);
+			}*/
 			auto b = hashMap.insert({peerHashes[local_i], local_i + global_i});
 			if (!b.second) // second is false when insertion fails
 			{
