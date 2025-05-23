@@ -2,6 +2,7 @@
 #include <boost/asio.hpp>
 #include <vector>
 #include "iMessage.h"
+#include "MainReceiveMessageInterface.h"
 
 using boost::asio::ip::tcp;
 using boost::asio::io_context;
@@ -9,7 +10,7 @@ using boost::asio::io_context;
 class PierClient
 {
 public:
-
+	static MainReceiveMessageInterface* mn;
 	enum class ClientFlags : uint8_t
 	{
 		NO_ANSWER_EXPECTED = 0b00000000,
@@ -46,6 +47,7 @@ private:
 	std::string dynbuf{};
 	std::string received_shash{};
 	
+
 	std::array<char, 1024> recvbuf;
 	
 	ClientFlags flags_{};

@@ -8,7 +8,8 @@ static Storage storage;
 
 Main::Main() : ThePier(nullptr, wxID_ANY, window_title, wxPoint(30, 30), wxSize(730, 325), wxDEFAULT_FRAME_STYLE | wxSYSTEM_MENU | wxTAB_TRAVERSAL), main_listener(main_io, this)
 {
-	    wxTextValidator validator(wxFILTER_EXCLUDE_CHAR_LIST);
+		PierClient::mn = this;
+		wxTextValidator validator(wxFILTER_EXCLUDE_CHAR_LIST);
 		wxArrayString invalidChars;
 		invalidChars.Add(wxT(";"));
 		invalidChars.Add(wxT("\r"));

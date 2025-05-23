@@ -6,6 +6,8 @@ using namespace boost::asio;
 using boost::asio::ip::tcp;
 using boost::asio::io_context;
 
+MainReceiveMessageInterface* PierClient::mn = nullptr;
+
 PierClient::PierClient(io_context& io, tcp::endpoint endpoint) : io_(io), sock(io)
 {
 	int32_t timeout_ms = 100000;
@@ -119,6 +121,8 @@ void PierClient::handle_read(const boost::system::error_code& err, size_t bytes_
 {
 	// Switch-case with different options for returns from peer.
 
+	PierProtocol::PierHeader header = PierProtocol::PierHeader::from_string(dynbuf);
+
 	switch (flags_)
 	{
 		case PierClient::ClientFlags::NO_ANSWER_EXPECTED: [[unlikely]] 
@@ -165,6 +169,7 @@ void PierClient::handle_read(const boost::system::error_code& err, size_t bytes_
 			while (std::getline(ss, field)) //while (std::getline(ss, field, ';'))
 			{
 				recv_messages.push_back(iMessage::from_str(field));
+				mn->ReceiveHandler(mn->GetStorage().GetChannel(header.channel_GUID), recv_messages.back());
 			}
 		}
 		break;
