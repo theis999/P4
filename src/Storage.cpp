@@ -160,17 +160,17 @@ void Storage::OpenStorage(string filename)
 		{
 			auto a = std::stoi(data[0]);
 			ch.messages.emplace_back(iMessage(std::stoi(data[0]), std::stoi(data[1]), data[2], data[3]));
-
-			if (ch.messages.size() > 1)
-			{
-				iMessage::shash tempShash = (*(ch.messages.end() - 2)).chainHash;
-				ch.messages.back().computeChainHash(tempShash);
-			}
-			else
-			{
-				iMessage::shash tempXYZH = {};
-				ch.messages.back().computeChainHash(tempXYZH);
-			}
+			
+			//if (ch.messages.size() > 1)
+			//{
+				//iMessage::shash tempShash = (*(ch.messages.end() - 2)).chainHash;
+			ch.messages.back().chainHash = iMessage::string_to_hash2(data[3]);
+			//}
+			//else
+			////iMessage::shash tempXYZH = {};
+				//ch.messages.back().computeChainHash(tempXYZH);
+			//}
+			
 		}
 	}
 }

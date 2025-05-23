@@ -167,7 +167,7 @@ void Channel::sync(Member& memb, User &sender, Storage &storage)
 	std::map<iMessage::shash, int> hashMap = {};
 	int global_i = 0;
 	bool OriginsNotFound = true;
-	int n = 2; // How many hashes we get at a time
+	int n = 1; // How many hashes we get at a time
 	Channel::syncOutput x{false, 0, 0};
 	while (1)
 	{
@@ -186,10 +186,14 @@ void Channel::sync(Member& memb, User &sender, Storage &storage)
 
 		// FUNCTION TO GET n clientHashes
 		vector<iMessage::shash> clientHashes = {};
+		vector<string> hashesInString;
+		vector<string> chainhashesInString;
 
 		for (int i = this->messages.size() - global_i - 1; i >= 0 && i >= this->messages.size() - global_i - n; --i)
 		{
 			clientHashes.push_back(this->messages[i].chainHash);
+			hashesInString.push_back(iMessage::hash_to_string2(this->messages[i].hash));
+			chainhashesInString.push_back(iMessage::hash_to_string2(clientHashes.back()));
 		}
 
 		x = findOrigins(hashMap, clientHashes, peerHashes, global_i);
