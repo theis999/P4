@@ -118,6 +118,17 @@ void Main::OnChannelsBox(wxCommandEvent& event)
 	SendText->SetFocus();
 }
 
+void Main::ReprintChat(Channel& ch)
+{
+	if (ch.global_id != storage.GetCurrentChannel().global_id)
+		return;
+	ChatDisplay->Clear();
+	for (auto& m : storage.GetCurrentChannel().messages)
+	{
+		DisplayMsg(m);
+	}
+}
+
 void Main::DisplayMsg(iMessage& msg)
 {
 	auto& member = storage.GetCurrentChannel().members.find(msg.member_id)->second;

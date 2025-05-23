@@ -25,7 +25,7 @@ public:
 	Storage& GetStorage();
 	User& GetCurrentUser();
 	void OnChannelsBox(wxCommandEvent& event);
-
+	void ReprintChat(Channel& ch);
 	void DisplayMsg(iMessage& m);
 
 	void OnSendTextChange(wxCommandEvent& event);

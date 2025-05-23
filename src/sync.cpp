@@ -103,6 +103,7 @@ bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin, 
 
 			}
 			storage.OverwriteChannel(*this);
+			storage.mn->ReprintChat(*this);
 
 			// SORT MESSAGES FROM clientOrigin with messages from peerOrigin
 			// 
