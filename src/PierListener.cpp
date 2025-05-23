@@ -62,9 +62,8 @@ void tcp_connection::handle_first_read(const boost::system::error_code& err, siz
 				iMessage::shash hash = iMessage::string_to_hash2(iMsgFields[2]);
 				iMessage::shash chainhash = iMessage::string_to_hash2(iMsgFields[3]);
 				std::string signature = iMsgFields[4];
-				std::string initText = iMsgFields[5];
+				std::string text = iMsgFields[5];
 
-				std::string text(initText.begin() + 1, initText.end());
 				// Handle Signature verification
 				string pubkey = Signing::readFileToString(".\\key.public.pem");
 				bool verifySignature = Signing::oneStepVerifyMessage(pubkey.c_str(), signature.c_str(), text.c_str());

@@ -48,9 +48,9 @@ std::string iMessage::to_sc_sep_str()
 	// Append chainhash
 	out.append(std::format("{};", iMessage::hash_to_string2(this->chainHash)));
 	// Append signature.
-	out.append(std::format("{};\n", this->signature));
+	out.append(std::format("{};", this->signature));
 	// Append text last.
-	out.append(this->text);
+	out.append(this->text+"\n");
 
 	return out;
 }
