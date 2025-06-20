@@ -69,7 +69,7 @@ ThePier::ThePier( wxWindow* parent, wxWindowID id, const wxString& title, const 
 
 	ChatSizer->Add( ChatDisplay, 0, wxALL|wxEXPAND, 5 );
 
-	test_button = new wxButton( ChatPanel, wxID_ANY, _("Run test"), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE );
+	test_button = new wxButton( ChatPanel, wxID_ANY, _("Sync"), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE );
 	ChatSizer->Add( test_button, 0, wxALL, 5 );
 
 
