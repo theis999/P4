@@ -25,28 +25,17 @@ bool Channel::resolveMessageConflictsByOrigin(int clientOrigin, int peerOrigin, 
 		//vector<iMessage> payload = {}; // !! MAKE THESE THE INCOMING MESSAGES !!
 		auto imsg = this->messages.end() - clientOrigin - 1;
 		auto& msg = *imsg;
-		vector<iMessage> payload = PierProtocol::SendMSGRequest(*this, memb, msg.chainHash, sender, storage);
+		vector<iMessage> peerMessages = PierProtocol::SendMSGRequest(*this, memb, msg.chainHash, sender, storage);
 
-
-		// DEBUG/TEST
-		/*extern Storage peerTestStorage;
-		payload.push_back(peerTestStorage.GetCurrentChannel().messages[3]);
-		payload.push_back(peerTestStorage.GetCurrentChannel().messages[4]);
-		payload.push_back(peerTestStorage.GetCurrentChannel().messages[5]);
-		*/
-
-
-		// ADD MESSAGES TO OUR LIST -- already done by receive handler
-		/*for (iMessage m : payload)
+		for (iMessage msg : peerMessages)
 		{
-			this->messages.push_back(m);
-		}*/
+			iMessage::shash tempShash = messages.back().chainHash;
+			msg.computeChainHash(tempShash);
+			messages.push_back(msg);
 
-		// HASHES SHOULD NOW MATCH
-		// if not then something major broke or transit failed
-		//bool x = std::equal(peerTestStorage.GetCurrentChannel().messages.begin(), peerTestStorage.GetCurrentChannel().messages.end(), this->messages.begin());
-		//bool x = (peerTestStorage.GetCurrentChannel().messages == this->messages);
-
+		}
+		storage.OverwriteChannel(*this);
+		storage.mn->ReprintChat(*this);
 
 		return true;
 	}
