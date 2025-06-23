@@ -162,13 +162,13 @@ bool Main::Login(User user, std::string password)
 			usr.IPv4[2] = std::byte{156};
 			usr.IPv4[3] = std::byte{44};
 		}
-		/*if (usr.name == "christian")
+		if (usr.name == "christian")
 		{
 			usr.IPv4[0] = std::byte{100};
-			usr.IPv4[1] = std::byte{103};
-			usr.IPv4[2] = std::byte{141};
-			usr.IPv4[3] = std::byte{24};
-		}*/
+			usr.IPv4[1] = std::byte{68};
+			usr.IPv4[2] = std::byte{207};
+			usr.IPv4[3] = std::byte{20};
+		}
 	}
 
 	ChannelsBox->Clear();
